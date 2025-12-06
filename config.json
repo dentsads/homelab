@@ -1,0 +1,23 @@
+{
+  "host": {
+    "hostname": "pve-beelink",
+    "domain": "lan",
+    "ip": "192.168.1.100",
+    "gateway": "192.168.1.1",
+    "dns": "1.1.1.1",
+    "cidr_bit": "24",
+    "interface": "eth0",
+    "disk": "nvme0n1" 
+  },
+  "vm": {
+    "id": 105,
+    "name": "docker-node-01",
+    "ip": "192.168.1.105",
+    "cores": 4,
+    "memory": 4096
+  },
+  "proxmox": {
+    "tf_user": "terraform-prov",
+    "iso_version": "9.1-1"
+  }
+}

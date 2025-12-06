@@ -1,0 +1,19 @@
+[global]
+keyboard = "de-DE"
+country = "de"
+fqdn = "${HOST_FQDN}"
+mailto = "admin@local"
+timezone = "UTC+1"
+root_password = "${HOST_PASS_HASH}"
+root_ssh_keys = [ "${SSH_KEY}" ]
+
+[network]
+source = "static"
+address = "${HOST_IP}"
+gateway = "${HOST_GATEWAY}"
+mask = ${HOST_CIDR}
+dns = "${HOST_DNS}"
+
+[disk-setup]
+filesystem = "ext4"
+disk_list = ["${HOST_DISK}"]

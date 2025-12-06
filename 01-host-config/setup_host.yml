@@ -1,0 +1,57 @@
+---
+- name: Configure Proxmox Host
+  hosts: all
+  become: true
+  gather_facts: yes
+  vars:
+    # These will be injected by the deploy script
+    tf_user: "{{ terraform_user }}"
+    tf_password: "{{ terraform_password }}"
+  
+  tasks:
+    - name: Clean Repositories
+      apt_repository:
+        repo: deb https://enterprise.proxmox.com/debian/pve bookworm pve-enterprise
+        state: absent
+
+    - name: Add No-Subscription Repo
+      apt_repository:
+        repo: deb http://download.proxmox.com/debian/pve bookworm pve-no-subscription
+        state: present
+
+    - name: Update System
+      apt:
+        update_cache: yes
+        upgrade: dist
+    
+    - name: Install Python Utils
+      apt:
+        pkg: [python3-proxmoxer, libguestfs-tools]
+
+    # Idempotent User Creation
+    - name: Create Terraform Role
+      command: pveum role add TerraformProv -privs "VM.Allocate VM.Config.Cpu VM.Config.Disk VM.Config.Memory VM.Config.Network VM.Config.Options VM.Monitor VM.Audit Datastore.AllocateSpace Datastore.Audit User.Modify"
+      register: role_cmd
+      failed_when: role_cmd.rc != 0 and "already exists" not in role_cmd.stderr
+
+    - name: Create Terraform User
+      command: pveum user add {{ tf_user }}@pve --password {{ tf_password }} --role TerraformProv
+      register: user_cmd
+      failed_when: user_cmd.rc != 0 and "already exists" not in user_cmd.stderr
+
+    # Download Cloud Image
+    - name: Download Debian Image
+      get_url:
+        url: https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-genericcloud-amd64.qcow2
+        dest: /var/lib/vz/template/iso/debian-12-genericcloud-amd64.qcow2
+
+    # Create Template (Shell script is easiest here due to complex logic)
+    - name: Create Cloud Init Template
+      shell: |
+        if ! qm list | grep -q "9000"; then
+          qm create 9000 --memory 2048 --net0 virtio,bridge=vmbr0
+          qm importdisk 9000 /var/lib/vz/template/iso/debian-12-genericcloud-amd64.qcow2 local-lvm
+          qm set 9000 --scsihw virtio-scsi-pci --scsi0 local-lvm:vm-9000-disk-0
+          qm set 9000 --ide2 local-lvm:cloudinit --boot c --bootdisk scsi0
+          qm template 9000
+        fi

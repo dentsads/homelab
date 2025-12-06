@@ -1,0 +1,42 @@
+# --- Secrets & Environment ---
+.env
+*.tfvars
+
+# --- Large Files (ISOs) ---
+# Ignore both the source Proxmox ISO and the custom build
+*.iso
+
+# --- Terraform ---
+# Local .terraform directory
+.terraform/
+
+# State files (contains sensitive data/IPs)
+*.tfstate
+*.tfstate.*
+
+# Crash logs
+crash.log
+crash.log.*
+
+# Exclude override files as they are usually local-only
+override.tf
+override.tf.json
+
+# --- Ansible ---
+# Retry files created when a playbook fails
+*.retry
+
+# Temporary inventory files created by deploy.sh
+inventory.ini
+
+# --- Proxmox Auto-Install ---
+# Contains the hashed root password and SSH keys
+00-iso/answer.toml
+
+# --- OS & Editor Utilities ---
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*~
