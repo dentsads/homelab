@@ -50,11 +50,11 @@ homelab-automation/
 └── 03-services/            # Layer 3: Docker Setup (Ansible)
 ```
 
-### 🚀 Usage Guide
+## 🚀 Usage Guide
 
 The deploy.sh script handles the entire lifecycle.
 
-#### Phase 1: Create the Installer
+### Phase 1: Create the Installer
 
 1. Build the ISO:
 This bakes your network config and SSH keys into a custom installer.
@@ -72,7 +72,7 @@ Output: `custom-installer.iso`
 ./deploy.sh flash
 ```
 
-#### Phase 2: Bare Metal Install
+### Phase 2: Bare Metal Install
 
 Insert the USB stick into the Beelink.
 
@@ -82,7 +82,7 @@ Do nothing. The installer will automatically select the disk defined in config.j
 
 Remove the USB stick when the machine reboots.
 
-#### Phase 3: Bootstrap Infrastructure
+### Phase 3: Bootstrap Infrastructure
 
 Once the Proxmox host is reachable (ping the IP set in config.json), run:
 
@@ -119,3 +119,20 @@ If you need to run specific parts of the pipeline separately:
 * `./deploy.sh host`	Runs Ansible to configure the Proxmox bare metal host.
 * `./deploy.sh infra`	Runs Terraform to create/update VMs.
 * `./deploy.sh services`	Runs Ansible to install Docker and deploy containers.
+
+## Wake-On-LAN
+
+In order to be able to use wake on lan you need to install the `ẁakeonlan` cli 
+
+```bash
+apt update
+
+apt install -y wakeonlan
+```
+
+afterwards you can wake up the server if you know the mac address
+
+```bash
+# e.g. sudo wakeonlan 78:55:36:02:6c:54
+sudo wakeonlan <mac-address>
+```
