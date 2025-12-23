@@ -3,7 +3,9 @@ set -e
 
 # 1. Load Environment and Tools
 source .env
-./bootstrap.sh
+
+# 2. Run Validator
+./validate.sh
 
 # 2. Parse Config
 HOST_IP=$(jq -r .host.ip config.json)
@@ -35,6 +37,7 @@ build_iso() {
     export HOST_CIDR="$(jq -r .host.cidr_bit config.json)"
     export HOST_DNS="$(jq -r .host.dns config.json)"
     export HOST_DISK="$(jq -r .host.disk config.json)"
+    export HOST_IFACE="$(jq -r .host.interface config.json)"
 
     envsubst < 00-iso/answer.template.toml > 00-iso/answer.toml
 
@@ -47,7 +50,7 @@ build_iso() {
     proxmox-auto-install-assistant prepare-iso "$ORIG_ISO" \
         --fetch-from iso \
         --answer-file 00-iso/answer.toml \
-        --output-file "$ISO_FILENAME"
+        --output "$ISO_FILENAME"
 
     echo "✅ ISO Created: $ISO_FILENAME"
     rm 00-iso/answer.toml
@@ -98,11 +101,11 @@ flash_usb() {
         diskutil unmountDisk $TARGET_DRIVE || true
         # Attempt to convert /dev/diskN to /dev/rdiskN for speed
         RAW_DISK="${TARGET_DRIVE/disk/rdisk}"
-        sudo dd if="$ISO_FILENAME" of="$RAW_DISK" bs=4m
+        dd if="$ISO_FILENAME" of="$RAW_DISK" bs=4m
     else
         # Linux
-        sudo umount "$TARGET_DRIVE"* 2>/dev/null || true
-        sudo dd if="$ISO_FILENAME" of="$TARGET_DRIVE" bs=4M status=progress oflag=sync
+        umount "$TARGET_DRIVE"* 2>/dev/null || true
+        dd if="$ISO_FILENAME" of="$TARGET_DRIVE" bs=4M status=progress oflag=sync
     fi
     
     echo ""

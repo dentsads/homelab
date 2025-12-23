@@ -2,17 +2,17 @@
   "host": {
     "hostname": "pve-beelink",
     "domain": "lan",
-    "ip": "192.168.1.100",
-    "gateway": "192.168.1.1",
+    "ip": "192.168.0.254",
+    "gateway": "192.168.0.1",
     "dns": "1.1.1.1",
     "cidr_bit": "24",
-    "interface": "eth0",
+    "interface": "enp1s0",
     "disk": "nvme0n1" 
   },
   "vm": {
     "id": 105,
     "name": "docker-node-01",
-    "ip": "192.168.1.105",
+    "ip": "192.168.0.253",
     "cores": 4,
     "memory": 4096
   },

@@ -1,18 +1,18 @@
 [global]
-keyboard = "de-DE"
+keyboard = "de"
 country = "de"
 fqdn = "${HOST_FQDN}"
 mailto = "admin@local"
-timezone = "UTC+1"
+timezone = "Europe/Berlin"
 root_password = "${HOST_PASS_HASH}"
 root_ssh_keys = [ "${SSH_KEY}" ]
 
 [network]
-source = "static"
-address = "${HOST_IP}"
+source = "from-answer"
+cidr = "${HOST_IP}/${HOST_CIDR}" 
 gateway = "${HOST_GATEWAY}"
-mask = ${HOST_CIDR}
 dns = "${HOST_DNS}"
+filter.ID_NET_NAME_MAC = "enx785536026c54"
 
 [disk-setup]
 filesystem = "ext4"
