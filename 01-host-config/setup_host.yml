@@ -62,12 +62,12 @@
       failed_when: role_cmd.rc != 0 and "already exists" not in role_cmd.stderr
 
     - name: Create Terraform User
-      command: pveum user add {{ tf_user }}@pve -password {{ tf_password }}
+      command: pveum user add "{{ tf_user }}@pve" -password "{{ tf_password }}"
       register: user_cmd
       failed_when: user_cmd.rc != 0 and "already exists" not in user_cmd.stderr
 
     - name: Assign Terraform user to role
-      command: pveum acl modify / -user {{ tf_user }}@pve -role TerraformProv
+      command: pveum acl modify / -user "{{ tf_user }}@pve" -role TerraformProv
       register: usermod_cmd
       failed_when: usermod_cmd.rc != 0 and "already exists" not in usermod_cmd.stderr
 

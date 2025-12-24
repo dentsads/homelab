@@ -4,7 +4,7 @@ country = "de"
 fqdn = "${HOST_FQDN}"
 mailto = "admin@local"
 timezone = "Europe/Berlin"
-root_password = "${HOST_PASS_HASH}"
+root_password_hashed = "${HOST_PASS_HASH}"
 root_ssh_keys = [ "${SSH_KEY}" ]
 
 [network]
