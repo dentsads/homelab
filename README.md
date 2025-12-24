@@ -131,3 +131,30 @@ afterwards you can wake up the server if you know the mac address
 # e.g. sudo wakeonlan 78:55:36:02:6c:54
 sudo wakeonlan <mac-address>
 ```
+
+## 🔑 Handling SSH Keys with Passphrases
+
+If your SSH private key is protected by a passphrase, Ansible inside the container will fail with `Permission denied (publickey)` because it cannot interactively ask you to type the password.
+
+To solve this, this pipeline uses **SSH Agent Forwarding**. You unlock the key once on your host machine, and the container uses the unlocked connection.
+
+**Before running the deployment, perform these steps on your host:**
+
+1.  **Start the SSH Agent** (if not running):
+    ```bash
+    eval "$(ssh-agent -s)"
+    ```
+
+2.  **Add your Private Key:**
+    Enter your passphrase when prompted.
+    ```bash
+    ssh-add ~/.ssh/id_ed25519
+    ```
+
+3.  **Verify:**
+    Ensure your key is listed.
+    ```bash
+    ssh-add -l
+    ```
+
+The `run-docker.sh` script automatically detects your running agent and mounts the socket into the container.

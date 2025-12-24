@@ -9,12 +9,16 @@ if [[ "$(docker images -q $IMAGE_NAME 2> /dev/null)" == "" ]]; then
     docker build -t $IMAGE_NAME .
 fi
 
-# 2. Run the container
-# --privileged: Required to access /dev/sdX for flashing
-# -v /dev:/dev: Passes block devices to container
-# -v $(pwd):/app: Mounts current repo
-# -v ~/.ssh:/root/.ssh: Mounts SSH keys (read-only recommended, but RW needed if adding to known_hosts)
-# --net host: Useful to access local network easily (optional but recommended for homelabs)
+# 2. Configure SSH Agent Forwarding
+# This checks if your host has an agent running and mounts the socket
+SSH_AGENT_ARGS=""
+if [ -n "$SSH_AUTH_SOCK" ]; then
+    echo "🔑 Forwarding SSH Agent to container..."
+    SSH_AGENT_ARGS="-v $SSH_AUTH_SOCK:/run/ssh-agent -e SSH_AUTH_SOCK=/run/ssh-agent"
+else
+    echo "⚠️  WARNING: SSH Agent not found on host."
+    echo "   You will likely be prompted for passwords or fail authentication."
+fi
 
 echo "🐳 Entering Container Environment..."
 echo "   (Your local repo is mounted at /app)"
@@ -25,5 +29,6 @@ docker run --rm -it \
     -v /dev:/dev \
     -v "$(pwd)":/app \
     -v "$HOME/.ssh":/root/.ssh \
+    $SSH_AGENT_ARGS \
     $IMAGE_NAME \
     ./deploy.sh "$@"

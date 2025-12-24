@@ -1,4 +1,4 @@
-FROM debian:trixie-slim
+FROM python:3.12-slim-bookworm
 
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -17,11 +17,6 @@ RUN apt-get update && apt-get install -y \
     xorriso \
     jq \
     openssh-client \
-    python3 \
-    python3-pip \
-    ansible \
-    python3-proxmoxer \
-    python3-requests \
     && rm -rf /var/lib/apt/lists/*
 
 # 2. Install Proxmox Auto Install Assistant (via Apt)
@@ -39,7 +34,15 @@ RUN wget -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor -o /usr/shar
     apt-get install -y terraform && \
     rm -rf /var/lib/apt/lists/*
 
-# 4. Setup Environment
+# 4. Install Ansible & Libs (Via PIP into Python 3.12)
+# 'passlib' is required for the Ansible 'password_hash' filter used in your templates
+RUN pip install --no-cache-dir --upgrade \
+    ansible \
+    proxmoxer \
+    requests \
+    passlib
+
+# 5. Setup Environment
 WORKDIR /app
 
 # 5. Default Command

@@ -9,6 +9,7 @@ source .env
 
 # 2. Parse Config
 HOST_IP=$(jq -r .host.ip config.json)
+HOST_MAC=$(jq -r .host.mac config.json)
 TF_USER=$(jq -r .proxmox.tf_user config.json)
 VM_IP=$(jq -r .vm.ip config.json)
 ISO_FILENAME="custom-installer.iso"
@@ -119,7 +120,7 @@ configure_host() {
     echo "$HOST_IP ansible_user=root ansible_ssh_private_key_file=${SSH_PUB_KEY_PATH%.pub} ansible_ssh_common_args='-o StrictHostKeyChecking=no'" >> inventory.ini
     
     ansible-playbook -i inventory.ini 01-host-config/setup_host.yml \
-        --extra-vars "terraform_user=$TF_USER terraform_password=$TF_USER_PASSWORD"
+        --extra-vars "terraform_user=$TF_USER terraform_password=$TF_USER_PASSWORD host_mac=$HOST_MAC"
     rm inventory.ini
 }
 

@@ -9,6 +9,28 @@
     tf_password: "{{ terraform_password }}"
   
   tasks:
+    - name: Configure Permanent Wake-on-LAN (Link File)
+      copy:
+        dest: /etc/systemd/network/50-wired.link
+        owner: root
+        group: root
+        mode: '0644'
+        content: |
+          [Match]
+          MACAddress={{ host_mac }}
+
+          [Link]
+          NamePolicy=kernel database onboard slot path
+          MACAddressPolicy=persistent
+          WakeOnLan=magic
+      register: wol_config
+
+    - name: Restart systemd-networkd to apply WOL settings
+      systemd:
+        name: systemd-networkd
+        state: restarted
+      when: wol_config.changed
+
     - name: Ensure enterprise repo file is not present
       file:
         path: /etc/apt/sources.list.d/pve-enterprise.sources
