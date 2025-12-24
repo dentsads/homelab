@@ -2,7 +2,7 @@
 
 DISCLAIMER: The following has been written by a LLM ;-)
 
-This repository contains a fully automated **Infrastructure as Code (IaC)** pipeline to provision a bare-metal MiniPC into a production-ready Docker Swarm node. 
+This repository contains a fully automated **Infrastructure as Code (IaC)** pipeline to provision a bare-metal MiniPC into a production-ready Docker Swarm node.
 
 It solves the "Inception Problem" of bootstrapping the hypervisor itself, followed by the VM infrastructure, and finally the application layer.
 
@@ -23,15 +23,12 @@ The automation is split into 4 reproducible layers:
 *   **Controller Machine:** A laptop/desktop running Linux, macOS, or WSL (Windows Subsystem for Linux).
 
 ### Software (Controller)
-You do not need to install tools manually. The included `bootstrap.sh` script will check for and install:
-*   `ansible`
-*   `terraform`
-*   `jq`
-*   `proxmox-auto-install-assistant` (Requires Rust/Cargo if not found)
-*   `xorriso` (for ISO building)
+You do not need to install Terraform, Ansible, or Python manually. The entire environment runs inside a container.
+
+*   **Docker Engine** (Installed and running)
 
 ### Secrets
-You must have an SSH Key pair generated:
+You must have an SSH Key pair generated on your host machine:
 ```bash
 ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519
 ```
@@ -42,8 +39,9 @@ ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519
 homelab-automation/
 ├── .env                    # Secrets (GitIgnored - You must create this)
 ├── config.json             # Central Config (IPs, Hostnames, Resources)
-├── deploy.sh               # Main orchestration script
-├── bootstrap.sh            # Dependency installer
+├── run-docker.sh           # ENTRYPOINT: Run this wrapper script
+├── Dockerfile              # Defines the build environment
+├── deploy.sh               # Internal orchestration (runs inside container)
 ├── 00-iso/                 # Layer 0: Custom ISO generation
 ├── 01-host-config/         # Layer 1: Proxmox Host Setup (Ansible)
 ├── 02-infrastructure/      # Layer 2: VM Creation (Terraform)
@@ -57,37 +55,34 @@ The deploy.sh script handles the entire lifecycle.
 ### Phase 1: Create the Installer
 
 1. Build the ISO:
-This bakes your network config and SSH keys into a custom installer.
+This spins up the builder container and bakes your network config/SSH keys into a custom installer.
 
 ```bash
-./deploy.sh iso
+./run-docker.sh iso
 ```
 
 Output: `custom-installer.iso`
 
 2. Flash to USB:
-⚠️ WARNING: This uses `dd`. Be absolutely sure you select the correct USB drive.
+⚠️ WARNING: This uses `dd`. Be absolutely sure you select the correct USB drive. The script will ask for confirmation.
 
 ```bash
-./deploy.sh flash
+./run-docker.sh flash
 ```
 
 ### Phase 2: Bare Metal Install
 
-Insert the USB stick into the Beelink.
-
-Boot the machine.
-
-Do nothing. The installer will automatically select the disk defined in config.json, wipe it, install Proxmox, configure the static IP, and reboot.
-
-Remove the USB stick when the machine reboots.
+1. Insert the USB stick into the Beelink.
+2. Boot the machine.
+3. Do nothing. The installer will automatically select the disk defined in `config.json`, wipe it, install Proxmox, configure the static IP, and reboot.
+4. Remove the USB stick when the machine reboots.
 
 ### Phase 3: Bootstrap Infrastructure
 
-Once the Proxmox host is reachable (ping the IP set in config.json), run:
+Once the Proxmox host is reachable (ping the IP set in `config.json`), run:
 
 ```bash
-./deploy.sh all
+./run-docker.sh all
 ```
 
 This single command performs the following "Inception" steps:
@@ -95,7 +90,7 @@ This single command performs the following "Inception" steps:
 1. Configure Host:
   * Connects to Proxmox via SSH (using the key injected by the ISO).
   * Removes Enterprise repos, updates packages.
-  * Creates a terraform-prov user and API permissions.
+  * Creates a `terraform-prov` user and API permissions.
   * Downloads a Debian Cloud Image and converts it to a Proxmox Template.
 
 2. Provision Infra:
@@ -114,11 +109,11 @@ This single command performs the following "Inception" steps:
 If you need to run specific parts of the pipeline separately:
 
 ### Command	Description
-* `./deploy.sh iso`	Generates the automated installation ISO.
-* `./deploy.sh flash`	Burns the ISO to a USB drive.
-* `./deploy.sh host`	Runs Ansible to configure the Proxmox bare metal host.
-* `./deploy.sh infra`	Runs Terraform to create/update VMs.
-* `./deploy.sh services`	Runs Ansible to install Docker and deploy containers.
+* `./run-docker.sh iso`	Generates the automated installation ISO.
+* `./run-docker.sh flash`	Burns the ISO to a USB drive.
+* `./run-docker.sh host`	Runs Ansible to configure the Proxmox bare metal host.
+* `./run-docker.sh infra`	Runs Terraform to create/update VMs.
+* `./run-docker.sh services`	Runs Ansible to install Docker and deploy containers.
 
 ## Wake-On-LAN
 
