@@ -1,0 +1,76 @@
+---
+- name: Install Docker and Deploy Services
+  hosts: docker_nodes
+  become: yes
+  vars:
+    # Target directory on the VM
+    project_dir: /opt/homelab
+    
+  tasks:
+    - name: Install system dependencies
+      apt:
+        pkg:
+          - ca-certificates
+          - curl
+          - gnupg
+          - lsb-release
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Create keyrings directory
+      file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: '0755'
+
+    - name: Add Docker GPG key
+      shell: |
+        curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+      args:
+        creates: /etc/apt/keyrings/docker.gpg
+
+    - name: Add Docker repository
+      shell: |
+        echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+      args:
+        creates: /etc/apt/sources.list.d/docker.list
+
+    - name: Install Docker Engine
+      apt:
+        pkg:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-buildx-plugin
+          - docker-compose-plugin
+        update_cache: yes
+
+    - name: Add admin user to docker group
+      user:
+        name: debian
+        groups: docker
+        append: yes
+
+    - name: Create project directory
+      file:
+        path: "{{ project_dir }}"
+        state: directory
+        owner: debian
+        group: docker
+        mode: '0775'
+
+    - name: Copy Docker Compose file
+      copy:
+        src: files/docker-compose.yml
+        dest: "{{ project_dir }}/docker-compose.yml"
+        owner: debian
+        group: docker
+        mode: '0644'
+
+    - name: Start Docker Compose Stack
+      # We use shell here to avoid needing python3-docker libraries on the target VM
+      shell: docker compose up -d --remove-orphans
+      args:
+        chdir: "{{ project_dir }}"
+      register: compose_output
+      changed_when: "'Created' in compose_output.stdout or 'Recreated' in compose_output.stdout"

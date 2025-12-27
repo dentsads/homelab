@@ -126,8 +126,17 @@ configure_host() {
 
 # --- FUNCTION: PROVISION INFRA ---
 provision_infra() {
-    echo "🏗️  Provisioning Infrastructure via Terraform..."
+        ACTION=$1
+    
+    echo "🏗️  Infrastructure Management (Action: ${ACTION:-apply})..."
     cd 02-infrastructure
+
+    # Debug: Check if key is loaded
+    if [ -z "$SSH_KEY_CONTENT" ]; then
+        echo "❌ Error: SSH Public Key content is empty!"
+        echo "   Checked path: $SSH_PUB_KEY_PATH"
+        exit 1
+    fi
     
     export TF_VAR_pm_api_url="https://${HOST_IP}:8006/api2/json"
     export TF_VAR_pm_user="${TF_USER}@pve"
@@ -138,8 +147,18 @@ provision_infra() {
     export TF_VAR_vm_ip=$(jq -r .vm.ip ../config.json)
     export TF_VAR_vm_gateway=$(jq -r .host.gateway ../config.json)
 
+    # Initialize Provider
     terraform init
-    terraform apply -auto-approve
+
+    # Toggle Action
+    if [ "$ACTION" == "destroy" ]; then
+        echo "💥 DESTROYING VM Infrastructure..."
+        terraform destroy -auto-approve
+    else
+        echo "🚀 Applying VM Infrastructure..."
+        terraform apply -auto-approve
+    fi
+
     cd ..
 }
 
@@ -166,7 +185,8 @@ case "$1" in
         configure_host
         ;;
     infra)
-        provision_infra
+        # Pass the second arg (e.g., "destroy") to the function
+        provision_infra "$2"
         ;;
     services)
         deploy_services
@@ -177,7 +197,7 @@ case "$1" in
         deploy_services
         ;;
     *)
-        echo "Usage: $0 {iso|flash|host|infra|services|all}"
+        echo "Usage: $0 {iso|flash|host|infra [destroy]|services|all}"
         echo "  1. ./deploy.sh iso    -> Build ISO"
         echo "  2. ./deploy.sh flash  -> Burn ISO to USB (dd)"
         echo "  3. [Boot Machine]"

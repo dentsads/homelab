@@ -55,11 +55,38 @@
       apt:
         pkg: [python3-proxmoxer, libguestfs-tools]
 
-    # Idempotent User Creation
-    - name: Create Terraform Role
-      command: pveum role add TerraformProv -privs "VM.Allocate VM.Config.CPU VM.Config.Disk VM.Config.Memory VM.Config.Network VM.Config.Options VM.Audit Datastore.AllocateSpace Datastore.Audit User.Modify"
-      register: role_cmd
-      failed_when: role_cmd.rc != 0 and "already exists" not in role_cmd.stderr
+    - name: Disable 'No Valid Subscription' Popup
+      replace:
+        path: /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js
+        regexp: "res\\.data\\.status\\.toLowerCase\\(\\) !== 'active'"
+        replace: "false"
+        backup: yes
+      register: pve_popup_patch
+
+    - name: Restart PVE Proxy (Apply UI Changes)
+      service:
+        name: pveproxy
+        state: restarted
+      when: pve_popup_patch.changed
+
+    - name: Ensure Terraform Role Exists
+      command: pveum role add TerraformProv
+      register: role_add
+      # Fail only if error is NOT "already exists"
+      failed_when: role_add.rc != 0 and "already exists" not in role_add.stderr
+      changed_when: role_add.rc == 0
+
+    - name: Enforce Terraform Role Permissions
+      command: 
+        argv:
+          - pveum
+          - role
+          - modify
+          - TerraformProv
+          - -privs
+          - "VM.Allocate VM.Config.CPU VM.Config.Disk VM.Config.Memory VM.Config.Network VM.Config.Options VM.Audit Datastore.AllocateSpace Datastore.Audit User.Modify Pool.Allocate Pool.Audit Sys.Audit Sys.Console Sys.Modify VM.Clone VM.Config.CDROM VM.Config.Cloudinit VM.Config.HWType VM.Migrate VM.PowerMgmt SDN.Use VM.GuestAgent.Audit"
+      register: role_mod
+      changed_when: role_mod.rc == 0
 
     - name: Create Terraform User
       command: pveum user add "{{ tf_user }}@pve" -password "{{ tf_password }}"
@@ -71,19 +98,41 @@
       register: usermod_cmd
       failed_when: usermod_cmd.rc != 0 and "already exists" not in usermod_cmd.stderr
 
-    # Download Cloud Image
     - name: Download Debian Image
       get_url:
         url: https://cloud.debian.org/images/cloud/{{ ansible_distribution_release }}/latest/debian-13-genericcloud-amd64.qcow2
         dest: /var/lib/vz/template/iso/debian-13-genericcloud-amd64.qcow2
 
-    # Create Template (Shell script is easiest here due to complex logic)
-    - name: Create Cloud Init Template
+    - name: Install QEMU Guest Agent In Image
+      command: 
+        argv:
+          - virt-customize
+          - -a
+          - /var/lib/vz/template/iso/debian-13-genericcloud-amd64.qcow2
+          - --update
+          - --install
+          - qemu-guest-agent
+          - --run-command
+          - systemctl start qemu-guest-agent
+          - --run-command
+          - systemctl enable qemu-guest-agent
+      register: virt_cust
+      changed_when: "'Installing: qemu-guest-agent' in virt_cust.stdout"
+
+
+    - name: Destroy existing Template debian-cloud-template 9000
+      command: qm destroy 9000 --purge true
+      ignore_errors: yes
+
+    - name: Create VM Template from Cloud Image
       shell: |
-        if ! qm list | grep -q "9000"; then
-          qm create 9000 --memory 2048 --net0 virtio,bridge=vmbr0
-          qm importdisk 9000 /var/lib/vz/template/iso/debian-13-genericcloud-amd64.qcow2 local-lvm
-          qm set 9000 --scsihw virtio-scsi-pci --scsi0 local-lvm:vm-9000-disk-0
-          qm set 9000 --ide2 local-lvm:cloudinit --boot c --bootdisk scsi0
-          qm template 9000
-        fi
+        qm create 9000 --memory 2048 --core 2 --name debian-cloud-template --net0 virtio,bridge=vmbr0
+        # Import the patched disk into local-lvm
+        qm importdisk 9000 /var/lib/vz/template/iso/debian-13-genericcloud-amd64.qcow2 local-lvm
+        qm set 9000 --scsihw virtio-scsi-pci --scsi0 local-lvm:vm-9000-disk-0
+        qm set 9000 --ide2 local-lvm:cloudinit
+        qm set 9000 --boot c --bootdisk scsi0
+        qm set 9000 --serial0 socket --vga serial0
+        qm set 9000 --agent enabled=1
+        qm resize 9000 scsi0 +4G
+        qm template 9000

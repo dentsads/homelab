@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  # Web-based management UI for Docker
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: portainer
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - portainer_data:/data
+    ports:
+      - "9000:9000"
+
+  # Simple lightweight container to verify network is working
+  whoami:
+    image: traefik/whoami
+    container_name: whoami
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+
+volumes:
+  portainer_data:
