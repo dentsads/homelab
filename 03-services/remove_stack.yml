@@ -1,0 +1,31 @@
+---
+- name: Remove Docker Stack
+  hosts: docker_nodes
+  become: yes
+  vars:
+    remote_stacks_dir: /opt/stacks
+  
+  tasks:
+    - name: Fail if stack name is missing
+      fail:
+        msg: "You must provide a 'stack_name' variable."
+      when: stack_name is undefined
+
+    - name: Check if stack directory exists
+      stat:
+        path: "{{ remote_stacks_dir }}/{{ stack_name }}"
+      register: stack_dir
+
+    - name: Stop and Remove Containers
+      # 'down' stops and removes containers/networks. 
+      # We do NOT use '-v' here to prevent accidental data loss of named volumes.
+      shell: docker compose down
+      args:
+        chdir: "{{ remote_stacks_dir }}/{{ stack_name }}"
+      when: stack_dir.stat.exists
+      ignore_errors: yes # Continue removing directory even if Docker fails
+
+    - name: Remove Stack Directory
+      file:
+        path: "{{ remote_stacks_dir }}/{{ stack_name }}"
+        state: absent

@@ -1,0 +1,39 @@
+---
+- name: Deploy Docker Stack
+  hosts: docker_nodes
+  become: yes
+  vars:
+    # Passed via CLI: stack_name (e.g. "core")
+    remote_stacks_dir: /opt/stacks
+  
+  tasks:
+    - name: Fail if stack name is missing
+      fail:
+        msg: "You must provide a 'stack_name' variable."
+      when: stack_name is undefined
+
+    - name: Ensure stack directory exists
+      file:
+        path: "{{ remote_stacks_dir }}/{{ stack_name }}"
+        state: directory
+        owner: debian
+        group: docker
+        mode: '0775'
+
+    - name: Sync Stack Files
+      # Copies everything from 03-services/stacks/<name>/ to /opt/stacks/<name>/
+      copy:
+        src: "stacks/{{ stack_name }}/"
+        dest: "{{ remote_stacks_dir }}/{{ stack_name }}/"
+        owner: debian
+        group: docker
+        mode: '0644'
+        # Ensure directories inside are executable
+        directory_mode: '0755'
+
+    - name: Deploy Stack '{{ stack_name }}'
+      shell: docker compose up -d --remove-orphans
+      args:
+        chdir: "{{ remote_stacks_dir }}/{{ stack_name }}"
+      register: compose_out
+      changed_when: "'Created' in compose_out.stderr or 'Recreated' in compose_out.stderr"

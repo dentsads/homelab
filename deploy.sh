@@ -164,13 +164,84 @@ provision_infra() {
 
 # --- FUNCTION: DEPLOY SERVICES ---
 deploy_services() {
-    echo "🚀 Deploying Docker Services to VM ($VM_IP)..."
-    sleep 30
-    echo "[docker_nodes]" > inventory.ini
-    echo "$VM_IP ansible_user=debian ansible_ssh_private_key_file=${SSH_PUB_KEY_PATH%.pub} ansible_ssh_common_args='-o StrictHostKeyChecking=no'" >> inventory.ini
+    SUB_CMD=$1
+    TARGET_STACK=$2
+    
+    echo "🚀 Service Management (Command: ${SUB_CMD:-usage})..."
+    
+    # --- COMMON: SETUP SSH KEYS ---
+    HOST_IP=$(jq -r .vm.ip config.json)
+    PUB_KEY_PATH=$(eval echo "$SSH_PUB_KEY_PATH")
+    PRIV_KEY_PATH="${PUB_KEY_PATH%.pub}"
+    SAFE_KEY_DIR="$HOME/.ssh-safe"
+    SAFE_KEY_PATH="$SAFE_KEY_DIR/id_deployment_key"
 
-    ansible-playbook -i inventory.ini 03-services/install_docker.yml
+    mkdir -p "$SAFE_KEY_DIR"
+    cp "$PRIV_KEY_PATH" "$SAFE_KEY_PATH"
+    chmod 600 "$SAFE_KEY_PATH"
+
+    echo "[docker_nodes]" > inventory.ini
+    echo "$HOST_IP ansible_user=debian ansible_ssh_private_key_file=$SAFE_KEY_PATH ansible_ssh_common_args='-o StrictHostKeyChecking=no'" >> inventory.ini
+    # ------------------------------
+
+    if [ "$SUB_CMD" == "install" ]; then
+        echo "🔧 Installing Docker Engine..."
+        ansible-playbook -i inventory.ini 03-services/setup_docker.yml
+        
+    elif [ "$SUB_CMD" == "deploy" ]; then
+        
+        if [ "$TARGET_STACK" == "all" ] || [ -z "$TARGET_STACK" ]; then
+            echo "📦 Deploying ALL stacks defined in 03-services/stacks/..."
+            for stack_dir in 03-services/stacks/*; do
+                if [ -d "$stack_dir" ]; then
+                    STACK_NAME=$(basename "$stack_dir")
+                    echo "   ➡️  Processing stack: $STACK_NAME"
+                    ansible-playbook -i inventory.ini 03-services/deploy_stack.yml \
+                        --extra-vars "stack_name=$STACK_NAME"
+                fi
+            done
+            echo "✅ All stacks deployed."
+        else
+            if [ ! -d "03-services/stacks/$TARGET_STACK" ]; then
+                 echo "❌ Error: Stack '$TARGET_STACK' not found locally."
+                 rm inventory.ini; rm -rf "$SAFE_KEY_DIR"; exit 1
+            fi
+            echo "📦 Deploying Single Stack: $TARGET_STACK ..."
+            ansible-playbook -i inventory.ini 03-services/deploy_stack.yml \
+                --extra-vars "stack_name=$TARGET_STACK"
+        fi
+
+    elif [ "$SUB_CMD" == "delete" ]; then
+
+        if [ "$TARGET_STACK" == "all" ] || [ -z "$TARGET_STACK" ]; then
+            echo "🔥 Deleting ALL stacks found in local 03-services/stacks/..."
+            for stack_dir in 03-services/stacks/*; do
+                if [ -d "$stack_dir" ]; then
+                    STACK_NAME=$(basename "$stack_dir")
+                    echo "   ➡️  Removing stack: $STACK_NAME"
+                    ansible-playbook -i inventory.ini 03-services/remove_stack.yml \
+                        --extra-vars "stack_name=$STACK_NAME"
+                fi
+            done
+            echo "✅ All matched stacks removed."
+        else
+            echo "🔥 Removing Single Stack: $TARGET_STACK ..."
+            # Note: We do NOT check if the local folder exists, allowing you 
+            # to delete stacks on the server even if you deleted the local folder.
+            ansible-playbook -i inventory.ini 03-services/remove_stack.yml \
+                --extra-vars "stack_name=$TARGET_STACK"
+        fi
+
+    else
+        echo "❌ Unknown service command."
+        echo "Usage:"
+        echo "  ./run-docker.sh services install             (Installs Docker)"
+        echo "  ./run-docker.sh services deploy <name|all>   (Starts stacks)"
+        echo "  ./run-docker.sh services delete <name|all>   (Stops & Removes stacks)"
+    fi
+
     rm inventory.ini
+    rm -rf "$SAFE_KEY_DIR"
 }
 
 # --- MENU ---
@@ -189,18 +260,15 @@ case "$1" in
         provision_infra "$2"
         ;;
     services)
-        deploy_services
+        deploy_services "$2" "$3"
         ;;
     all)
         configure_host
         provision_infra
-        deploy_services
+        deploy_services install
+        deploy_services deploy all
         ;;
     *)
-        echo "Usage: $0 {iso|flash|host|infra [destroy]|services|all}"
-        echo "  1. ./deploy.sh iso    -> Build ISO"
-        echo "  2. ./deploy.sh flash  -> Burn ISO to USB (dd)"
-        echo "  3. [Boot Machine]"
-        echo "  4. ./deploy.sh all    -> Configure Host, VM, and Docker"
+        echo "Usage: $0 {iso|flash|host|infra [destroy]|services {install|deploy <stack>|deploy all}|all}"
         ;;
 esac
