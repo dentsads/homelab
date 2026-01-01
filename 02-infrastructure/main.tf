@@ -8,6 +8,8 @@ resource "proxmox_vm_qemu" "docker_node" {
   agent = 1
   agent_timeout = 180
 
+  start_at_node_boot = true
+
   cpu {
     cores = 4
   }
