@@ -1,0 +1,17 @@
+---
+- name: "Archive volume: {{ volume_name }}"
+  shell: |
+    # standard path for docker named volumes
+    cd /var/lib/docker/volumes/{{ volume_name }}/_data && \
+    tar -czf {{ remote_tmp_dir }}/{{ volume_name }}.tar.gz .
+
+- name: "Download backup: {{ volume_name }}"
+  fetch:
+    src: "{{ remote_tmp_dir }}/{{ volume_name }}.tar.gz"
+    dest: "{{ local_backup_dir }}/{{ stack_name }}/"
+    flat: yes
+
+- name: Clean remote archive
+  file:
+    path: "{{ remote_tmp_dir }}/{{ volume_name }}.tar.gz"
+    state: absent

@@ -232,12 +232,28 @@ deploy_services() {
                 --extra-vars "stack_name=$TARGET_STACK"
         fi
 
+    elif [ "$SUB_CMD" == "backup" ]; then
+        if [ -z "$TARGET_STACK" ]; then echo "❌ Specify stack name."; exit 1; fi
+        
+        echo "💾 Backing up volumes for stack: $TARGET_STACK ..."
+        ansible-playbook -i inventory.ini 03-services/backup_stack.yml \
+            --extra-vars "stack_name=$TARGET_STACK"
+
+    elif [ "$SUB_CMD" == "restore" ]; then
+        if [ -z "$TARGET_STACK" ]; then echo "❌ Specify stack name."; exit 1; fi
+
+        echo "♻️  Restoring volumes for stack: $TARGET_STACK ..."
+        ansible-playbook -i inventory.ini 03-services/restore_stack.yml \
+            --extra-vars "stack_name=$TARGET_STACK"
+            
     else
-        echo "❌ Unknown service command."
+        echo "❌ Unknown command."
         echo "Usage:"
         echo "  ./run-docker.sh services install             (Installs Docker)"
         echo "  ./run-docker.sh services deploy <name|all>   (Starts stacks)"
         echo "  ./run-docker.sh services delete <name|all>   (Stops & Removes stacks)"
+        echo "  ./run-docker.sh services backup <name>       (Backs up stack volumes)"
+        echo "  ./run-docker.sh services restore <name>      (Restores stack volumes)"
     fi
 
     rm inventory.ini

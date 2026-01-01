@@ -36,6 +36,9 @@ inventory.ini
 # Contains the hashed root password and SSH keys
 00-iso/answer.toml
 
+# --- Backups ---
+backups/
+
 # --- OS & Editor Utilities ---
 .DS_Store
 Thumbs.db

@@ -1,0 +1,31 @@
+---
+- name: Restore Docker Stack Volumes
+  hosts: docker_nodes
+  become: yes
+  vars:
+    local_backup_dir: "../backups"
+
+  tasks:
+    - name: Fail if stack name is missing
+      fail:
+        msg: "You must provide a 'stack_name' variable."
+      when: stack_name is undefined
+
+    - name: Find local backup files for this stack
+      delegate_to: localhost
+      become: no
+      find:
+        paths: "{{ local_backup_dir }}/{{ stack_name }}"
+        patterns: "*.tar.gz"
+      register: backup_files
+
+    - name: Fail if no backups found
+      fail:
+        msg: "No backup files found in {{ local_backup_dir }}/{{ stack_name }}"
+      when: backup_files.matched == 0
+
+    - name: Restore each volume
+      include_tasks: tasks/restore_volume_task.yml
+      loop: "{{ backup_files.files }}"
+      loop_control:
+        loop_var: backup_item

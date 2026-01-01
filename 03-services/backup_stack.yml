@@ -1,0 +1,53 @@
+---
+- name: Backup Docker Stack Volumes
+  hosts: docker_nodes
+  become: yes
+  vars:
+    # Where to save on your laptop (controller)
+    local_backup_dir: "../backups"
+    remote_tmp_dir: "/tmp/docker_backups"
+
+  tasks:
+    - name: Fail if stack name is missing
+      fail:
+        msg: "You must provide a 'stack_name' variable."
+      when: stack_name is undefined
+
+    - name: Ensure local backup directory exists
+      delegate_to: localhost
+      become: no
+      file:
+        path: "{{ local_backup_dir }}/{{ stack_name }}"
+        state: directory
+        mode: '0755'
+
+    - name: Get list of volumes for this stack
+      # We filter volumes by the label Docker Compose adds automatically
+      shell: docker volume ls --filter label=com.docker.compose.project={{ stack_name }} --format "{{ '{{' }}.Name{{ '}}' }}"
+      register: stack_volumes
+
+    - name: Fail if no volumes found
+      fail:
+        msg: "No volumes found for stack '{{ stack_name }}'. Is the stack running or created?"
+      when: stack_volumes.stdout_lines | length == 0
+
+    - name: Stop containers to ensure data consistency
+      shell: docker compose stop
+      args:
+        chdir: "/opt/stacks/{{ stack_name }}"
+
+    - name: Create remote temp dir
+      file:
+        path: "{{ remote_tmp_dir }}"
+        state: directory
+
+    - name: Backup each volume
+      include_tasks: tasks/backup_volume_task.yml
+      loop: "{{ stack_volumes.stdout_lines }}"
+      loop_control:
+        loop_var: volume_name
+
+    - name: Restart containers
+      shell: docker compose start
+      args:
+        chdir: "/opt/stacks/{{ stack_name }}"

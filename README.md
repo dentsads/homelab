@@ -158,3 +158,118 @@ To solve this, this pipeline uses **SSH Agent Forwarding**. You unlock the key o
     ```
 
 The `run-docker.sh` script automatically detects your running agent and mounts the socket into the container.
+
+## 💾 Backup & Restore Guide
+
+This repository includes an automated workflow to snapshot Docker Named Volumes and restore them. This ensures that even if you wipe the entire MiniPC, you can recover your application state (databases, configs, histories) in minutes.
+
+---
+
+### 🏗 How it Works
+
+The backup system targets **Docker Named Volumes** (located at `/var/lib/docker/volumes/`). It does **not** backup bind mounts (host paths), so ensure your `docker-compose.yml` files use named volumes for persistent data.
+
+#### The Backup Flow
+1.  **Stop:** The stack containers are stopped to ensure data consistency (no database writes during backup).
+2.  **Archive:** Each volume associated with the stack is compressed into a `.tar.gz` file.
+3.  **Download:** The archives are downloaded to your local controller machine (inside the `backups/` folder).
+4.  **Restart:** The stack containers are started again.
+
+### The Restore Flow
+1.  **Upload:** Backup archives are uploaded to the remote VM.
+2.  **Create:** The Docker volume is created (if missing).
+3.  **Extract:** Data is unarchived directly into the volume data directory.
+
+---
+
+### 🛠 Commands
+
+All commands are run via the `run-docker.sh` wrapper.
+
+#### 1. Backing Up a Stack
+
+To backup a stack (e.g., `core`):
+
+```bash
+./run-docker.sh services backup core
+```
+
+Result:
+You will find the files on your laptop at:
+./backups/core/core.tar.gz
+
+#### 1. Restoring a Stack
+
+To restore data to the stack:
+
+```bash
+./run-docker.sh services restore core
+```
+
+## 🚨 Disaster Recovery Scenario (Total Wipe)
+
+If your server dies or you intentionally wipe the machine, follow this exact sequence to restore operations.
+
+#### 1. Rebuild Infrastructure
+
+Run the main automation pipeline to provision the hardware, VM, and empty containers. 
+
+```bash
+# This configures Host -> Creates VM -> Installs Docker -> Starts Empty Stacks
+./run-docker.sh all
+```
+
+At this point, your services (e.g., Portainer) are running, but they are fresh installations with no data.
+
+#### 2. Stop the "Empty" Stacks
+
+You cannot restore data while the specific stack is running. Stop the specific stack you want to restore (e.g., core).
+
+```bash
+./run-docker.sh services delete core
+```
+
+(Note: 'delete' here stops containers and removes the service definition, but keeps the volumes. We are about to overwrite those volumes.)
+
+#### 3. Restore Data
+
+Inject your local backups into the VM.
+
+```bash
+./run-docker.sh services restore core
+```
+
+#### 4. Restart Service
+
+Now start the stack again. It will attach to the restored volumes.
+
+```bash
+./run-docker.sh services deploy core
+```
+
+#### Verification:
+Log in to your service (e.g., Portainer UI). Your previous admin account, settings, and environments should be present.
+
+### ⚠️ Important Notes
+
+#### 1. Bind Mounts:
+If you use bind mounts (e.g., - `/opt/data:/data`) in your Compose files, this tool will NOT backup that data. Recommendation: Use Named Volumes for everything in this setup.
+
+Bad (Bind Mount):
+```yaml
+volumes:
+  - ./config:/config
+```
+
+Good (Named Volume):
+
+```yaml
+volumes:
+  - config_data:/config
+
+volumes:
+  config_data:
+```
+
+#### 2. Git Ignore:
+The `backups/` folder is ignored by Git (`.gitignore`) to prevent committing large binaries or sensitive database dumps to your version control. Ensure you have a separate backup strategy for your laptop (e.g., Time Machine, Backblaze) to protect these `.tar.gz` files.

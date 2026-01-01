@@ -1,0 +1,16 @@
+---
+- name: Extract Volume Name from Filename
+  set_fact:
+    # filename is like "core_portainer_data.tar.gz" -> "core_portainer_data"
+    volume_name: "{{ backup_item.path | basename | replace('.tar.gz', '') }}"
+
+- name: Create Docker Volume if missing
+  shell: docker volume create {{ volume_name }}
+
+- name: Unarchive data into volume
+  # We use unarchive module which handles upload + extract in one go
+  unarchive:
+    src: "{{ backup_item.path }}"
+    dest: "/var/lib/docker/volumes/{{ volume_name }}/_data"
+    owner: root
+    group: root
