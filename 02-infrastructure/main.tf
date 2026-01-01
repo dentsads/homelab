@@ -6,6 +6,7 @@ resource "proxmox_vm_qemu" "docker_node" {
   full_clone  = true
 
   agent = 1
+  agent_timeout = 180
 
   cpu {
     cores = 4
@@ -15,12 +16,21 @@ resource "proxmox_vm_qemu" "docker_node" {
   scsihw  = "virtio-scsi-pci"
   
   disk {
-    slot = "scsi0"
-    size = "20G"
-    type = "cloudinit"
+    slot    = "scsi0"
+    size    = "20G"
+    type    = "disk"
     storage = "local-lvm"
+    discard = true
   }
   
+  disk {
+    slot    = "ide2"  
+    type    = "cloudinit"
+    storage = "local-lvm"    
+  }
+
+  boot = "order=scsi0"
+
   network {
     id = 0
     model = "virtio"

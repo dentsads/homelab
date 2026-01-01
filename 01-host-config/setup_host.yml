@@ -84,7 +84,7 @@
           - modify
           - TerraformProv
           - -privs
-          - "VM.Allocate VM.Config.CPU VM.Config.Disk VM.Config.Memory VM.Config.Network VM.Config.Options VM.Audit Datastore.AllocateSpace Datastore.Audit User.Modify Pool.Allocate Pool.Audit Sys.Audit Sys.Console Sys.Modify VM.Clone VM.Config.CDROM VM.Config.Cloudinit VM.Config.HWType VM.Migrate VM.PowerMgmt SDN.Use VM.GuestAgent.Audit"
+          - "VM.Allocate VM.Config.CPU VM.Config.Disk VM.Config.Memory VM.Config.Network VM.Config.Options VM.Audit Datastore.AllocateSpace Datastore.Audit User.Modify Pool.Allocate Pool.Audit Sys.Audit Sys.Console Sys.Modify VM.Clone VM.Config.CDROM VM.Config.Cloudinit VM.Config.HWType VM.Migrate VM.PowerMgmt SDN.Use VM.GuestAgent.Audit VM.Console"
       register: role_mod
       changed_when: role_mod.rc == 0
 
@@ -113,12 +113,26 @@
           - --install
           - qemu-guest-agent
           - --run-command
-          - systemctl start qemu-guest-agent
-          - --run-command
           - systemctl enable qemu-guest-agent
+          - --run-command
+          - systemctl start qemu-guest-agent
       register: virt_cust
       changed_when: "'Installing: qemu-guest-agent' in virt_cust.stdout"
 
+    - name: Verify qemu-guest-agent is installed in image
+      command: >
+        virt-ls -a /var/lib/vz/template/iso/debian-13-genericcloud-amd64.qcow2 /usr/sbin/
+      register: image_files
+
+    - name: Check if qemu-ga is present
+      debug:
+        msg: "qemu-guest-agent appears to be installed"
+      when: "'qemu-ga' in image_files.stdout"
+
+    - name: Warning if qemu-ga not found
+      debug:
+        msg: "WARNING: qemu-ga binary not found in image!"
+      when: "'qemu-ga' not in image_files.stdout"
 
     - name: Destroy existing Template debian-cloud-template 9000
       command: qm destroy 9000 --purge true
@@ -130,9 +144,10 @@
         # Import the patched disk into local-lvm
         qm importdisk 9000 /var/lib/vz/template/iso/debian-13-genericcloud-amd64.qcow2 local-lvm
         qm set 9000 --scsihw virtio-scsi-pci --scsi0 local-lvm:vm-9000-disk-0
-        qm set 9000 --ide2 local-lvm:cloudinit
-        qm set 9000 --boot c --bootdisk scsi0
+        qm set 9000 --boot order=scsi0
+        qm set 9000 --ide2 local-lvm:cloudinit        
         qm set 9000 --serial0 socket --vga serial0
         qm set 9000 --agent enabled=1
         qm resize 9000 scsi0 +4G
+        qm set 9000 --ipconfig0 ip=dhcp
         qm template 9000
