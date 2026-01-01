@@ -1,0 +1,17 @@
+# --- Home Assistant ---
+ha.192.168.0.253.nip.io {
+    tls internal
+    reverse_proxy 127.0.0.1:8123
+}
+
+# --- Vaultwarden ---
+vw.192.168.0.253.nip.io {
+    tls internal
+    reverse_proxy 127.0.0.1:8081
+}
+
+# --- Portainer (Optional) ---
+portainer.192.168.0.253.nip.io {
+    tls internal
+    reverse_proxy 127.0.0.1:9000
+}

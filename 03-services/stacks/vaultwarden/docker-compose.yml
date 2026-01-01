@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  vaultwarden:
+    image: vaultwarden/server:latest
+    container_name: vaultwarden
+    restart: unless-stopped
+    environment:
+      # --- SECURITY SETTINGS ---
+      # 1. Admin Page Token.
+      # Generate a secure string (e.g., `openssl rand -base64 48`) and paste it here.
+      # If you leave this out, the /admin portal is disabled.
+      - ADMIN_TOKEN=ReplaceWithAVeryLongRandomString123!
+      
+      # 2. Registration.
+      # Set to 'false' once you have created your user account to prevent strangers 
+      # from creating accounts on your server.
+      - SIGNUPS_ALLOWED=true
+      
+      # 3. Domain URL (Important for invitation links)
+      # Replace with your actual VM IP or Domain
+      - DOMAIN=https://vw.192.168.0.253.nip.io
+
+      # 4. WebSocket (for instant sync)
+      - WEBSOCKET_ENABLED=true
+      
+    volumes:
+      - vw_data:/data
+    ports:
+      # BIND TO LOCALHOST ONLY!
+      # This maps host port 8081 to container port 80
+      - "127.0.0.1:8081:80"
+      - "127.0.0.1:3012:3012"
+
+volumes:
+  vw_data:
