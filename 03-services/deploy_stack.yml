@@ -31,9 +31,22 @@
         # Ensure directories inside are executable
         directory_mode: '0755'
 
+    - name: Inject Secrets (.env)
+      copy:
+        src: "../.env"
+        dest: "{{ remote_stacks_dir }}/{{ stack_name }}/.env"
+        owner: debian
+        group: docker
+        mode: '0600'
+
     - name: Deploy Stack '{{ stack_name }}'
       shell: docker compose up -d --remove-orphans
       args:
         chdir: "{{ remote_stacks_dir }}/{{ stack_name }}"
       register: compose_out
       changed_when: "'Created' in compose_out.stderr or 'Recreated' in compose_out.stderr"
+
+    - name: Remove Secrets (.env) for security
+      file:
+        path: "{{ remote_stacks_dir }}/{{ stack_name }}/.env"
+        state: absent

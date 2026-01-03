@@ -15,3 +15,21 @@ portainer.192.168.0.253.nip.io {
     tls internal
     reverse_proxy 127.0.0.1:9000
 }
+
+# --- WireGuard Web UI ---
+wg.192.168.0.253.nip.io {
+    tls internal
+    reverse_proxy 127.0.0.1:51821
+}
+
+# --- Stirling PDF ---
+pdf.192.168.0.253.nip.io {
+    tls internal
+    reverse_proxy 127.0.0.1:8082
+}
+
+# --- qBittorrent (via VPN) ---
+torrent.192.168.0.253.nip.io {
+    tls internal
+    reverse_proxy 127.0.0.1:8090
+}

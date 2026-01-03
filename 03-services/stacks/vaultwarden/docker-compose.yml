@@ -10,7 +10,7 @@ services:
       # 1. Admin Page Token.
       # Generate a secure string (e.g., `openssl rand -base64 48`) and paste it here.
       # If you leave this out, the /admin portal is disabled.
-      - ADMIN_TOKEN=ReplaceWithAVeryLongRandomString123!
+      - ADMIN_TOKEN=${VAULTWARDEN_ADMIN_TOKEN}
       
       # 2. Registration.
       # Set to 'false' once you have created your user account to prevent strangers 

@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  stirling-pdf:
+    image: stirlingtools/stirling-pdf:latest
+    container_name: stirling-pdf
+    restart: unless-stopped
+    environment:
+      # --- BASIC SETTINGS ---
+      - DOCKER_ENABLE_SECURITY=false
+      - INSTALL_BOOK_AND_ADVANCED_HTML_OPS=false
+      - LANGS=en_GB
+      
+      # --- SECURITY (Recommended) ---
+      # Set to 'true' to require a login.
+      - SECURITY_ENABLELOGIN=true
+      - SECURITY_INITIALLOGIN_USERNAME=${STIRLING_SECURITY_INITIALLOGIN_USERNAME}
+      - SECURITY_INITIALLOGIN_PASSWORD=${STIRLING_SECURITY_INITIALLOGIN_PASSWORD}
+      
+      # Hide the "Stirling PDF" branding if you prefer a cleaner look
+      # - SYSTEM_CUSTOMBRANDNAME=My PDF Tools
+      
+    volumes:
+      - training_data:/usr/share/tessdata # OCR Training Data
+      - extra_configs:/configs
+      - logs:/logs
+
+    ports:
+      # Bind to Localhost port 8082
+      - "127.0.0.1:8082:8080"
+
+volumes:
+  training_data:
+  extra_configs:
+  logs:
