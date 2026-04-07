@@ -1,0 +1,41 @@
+version: "3.8"
+services:
+  wg-easy:
+    image: ghcr.io/wg-easy/wg-easy
+    container_name: wg-easy
+    restart: unless-stopped
+    # Required for VPN networking
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    sysctls:
+      - net.ipv4.ip_forward=1
+      - net.ipv4.conf.all.src_valid_mark=1
+    environment:
+      # ⚠️ CHANGE THIS to your Public WAN IP or DDNS Hostname
+      # Do NOT use 192.168.x.x here, or it only works inside your house.
+      - WG_HOST=your-public-ip.com
+      
+      # The password to log into the Web UI
+      # https://github.com/wg-easy/wg-easy/blob/v14/How_to_generate_an_bcrypt_hash.md
+      - PASSWORD_HASH=${WGEASY_PASSWORD_HASH}
+      
+      - WG_PORT=51820
+      - WG_DEFAULT_ADDRESS=10.8.0.x
+      - WG_DEFAULT_DNS=1.1.1.1
+      - WG_MTU=1420
+      - WG_ALLOWED_IPS=0.0.0.0/0
+      - UI_TRAFFIC_STATS=true
+      
+    volumes:
+      - wg_data:/etc/wireguard
+      
+    ports:
+      # The VPN Tunnel (UDP) - Must be exposed publicly
+      - "51820:51820/udp"
+      
+      # The Web UI (TCP) - Bind to Localhost only, let Caddy handle SSL
+      - "127.0.0.1:51821:51821/tcp"
+
+volumes:
+  wg_data:

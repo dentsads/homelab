@@ -1,0 +1,16 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "provider": {
+    "openrouter": {
+      "options": {
+        "apiKey": "{env:OPENROUTER_API_KEY}"
+      }
+    }
+  },
+  "enabled_providers": ["openrouter"],
+  "server": {
+    "port": 8085,
+    "hostname": "0.0.0.0"
+  },
+  "share": "disabled"
+}

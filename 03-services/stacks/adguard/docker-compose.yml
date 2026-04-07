@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  adguard:
+    image: adguard/adguardhome
+    container_name: adguardhome
+    restart: unless-stopped
+    # Host mode is MANDATORY for DHCP to work
+    network_mode: host
+    
+    # [NEW] Give permission to manage raw network packets (DHCP)
+    cap_add:
+      - NET_ADMIN
+    
+    volumes:
+      - adguard_work:/opt/adguardhome/work
+      # - ./conf/AdGuardHome.yaml:/opt/adguardhome/conf/AdGuardHome.yaml
+      - adguard_conf:/opt/adguardhome/conf
+
+volumes:
+  adguard_work:
+  adguard_conf:

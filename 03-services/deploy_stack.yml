@@ -39,6 +39,36 @@
         group: docker
         mode: '0600'
 
+    - name: Prepare AdGuard Configuration
+      block:
+        - name: Create AdGuard Config Directory
+          file:
+            path: "{{ remote_stacks_dir }}/{{ stack_name }}/conf"
+            state: directory
+            owner: debian
+            group: docker
+            mode: '0755'
+
+        - name: Generate Password Hash
+          debug:
+            msg: "Generating hash..."
+          # We use Ansible's built-in filter to hash the password from .env
+          # Note: We need to pass ADGUARD_PASSWORD from the environment
+          
+        - name: Render AdGuardHome.yaml from Template
+          template:
+            src: "stacks/{{ stack_name }}/AdGuardHome.yaml.j2"
+            dest: "{{ remote_stacks_dir }}/{{ stack_name }}/conf/AdGuardHome.yaml"
+            owner: debian
+            group: docker
+            mode: '0644'
+          vars:
+            # Hash the password using bcrypt
+            adguard_user: "{{ lookup('env', 'ADGUARD_USER') }}"
+            adguard_password_hash: "{{ lookup('env', 'ADGUARD_PASSWORD') | password_hash('bcrypt') }}"
+
+      when: stack_name == 'adguard'
+
     - name: Deploy Stack '{{ stack_name }}'
       shell: docker compose up -d --remove-orphans
       args:

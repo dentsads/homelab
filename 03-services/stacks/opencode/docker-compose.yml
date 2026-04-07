@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  opencode:
+    image: ghcr.io/anomalyco/opencode:latest
+    container_name: opencode-server
+    restart: unless-stopped
+    environment:
+      # OpenRouter API Key for LLM access
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      # Server authentication
+      - OPENCODE_SERVER_PASSWORD=${OPENCODE_SERVER_PASSWORD}
+      - OPENCODE_SERVER_USERNAME=opencode
+    ports:
+      # Bind to localhost only - Caddy will proxy
+      - "127.0.0.1:8085:8085"
+    volumes:
+      # Persistent storage for OpenCode config and auth
+      - opencode_config:/root/.local/share/opencode
+      # Working directory for repositories
+      - opencode_workspace:/workspace
+      # Pre-configured opencode.json
+      - ./config/opencode.json:/root/.config/opencode/opencode.json:ro
+    working_dir: /workspace
+    # Run the web server
+    command: ["opencode", "web", "--port", "8085", "--hostname", "0.0.0.0"]
+
+volumes:
+  opencode_config:
+  opencode_workspace:

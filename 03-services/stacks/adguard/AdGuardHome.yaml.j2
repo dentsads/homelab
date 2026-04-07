@@ -1,0 +1,58 @@
+bind_host: 0.0.0.0
+bind_port: 3000
+auth_attempts: 5
+block_auth_min: 15
+http_proxy: ""
+language: en
+theme: auto
+debug_pprof: false
+web_session_ttl: 720
+dns:
+  bind_hosts:
+    - 0.0.0.0
+  port: 53
+  # Upstream DNS (Cloudflare, Google, Quad9)
+  upstream_dns:
+    - 1.1.1.1
+    - 8.8.8.8
+  
+  # --- DNS REWRITES (Managed by IaC) ---
+  rewrites:
+    - domain: "*.home.lab"
+      answer: "192.168.0.253"
+    # Add more static entries here if needed
+    # - domain: "printer.home.lab"
+    #   answer: "192.168.0.50"
+
+# --- DHCP CONFIGURATION ---
+dhcp:
+  enabled: true
+  interface_name: ens18  # Standard Proxmox VM interface
+  local_domain_name: home.lab
+  dhcpv4:
+    gateway_ip: 192.168.0.1
+    subnet_mask: 255.255.255.0
+    range_start: 192.168.0.10
+    range_end: 192.168.0.250
+    lease_duration: 86400
+  dhcpv6:
+    range_start: "2a02:8070:180:4000::"
+    lease_duration: 86400
+
+# --- USER AUTHENTICATION ---
+users:
+  - name: {{ adguard_user }}
+    password: {{ adguard_password_hash }}
+
+# Basic filters to start with
+filters:
+  - enabled: true
+    url: https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt
+    name: AdGuard DNS filter
+    id: 1
+  - enabled: true
+    url: https://adguardteam.github.io/AdGuardSDNSFilter/Filters/raw/filter.txt
+    name: AdGuard Away
+    id: 2
+
+schema_version: 27
