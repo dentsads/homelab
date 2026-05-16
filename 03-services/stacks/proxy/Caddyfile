@@ -34,6 +34,12 @@ opencode.192.168.0.253.nip.io {
     reverse_proxy 127.0.0.1:8085
 }
 
+# --- OpenChamber ---
+openchamber.192.168.0.253.nip.io {
+    tls internal
+    reverse_proxy 127.0.0.1:3000
+}
+
 # --- qBittorrent (via VPN) ---
 torrent.192.168.0.253.nip.io {
     tls internal
@@ -44,4 +50,11 @@ torrent.192.168.0.253.nip.io {
 portainer.home.lab {
     tls internal
     reverse_proxy 127.0.0.1:9000
+}
+
+
+# --- Adguard ---
+adguard.192.168.0.253.nip.io {
+    tls internal
+    reverse_proxy 127.0.0.1:3005
 }

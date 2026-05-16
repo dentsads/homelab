@@ -15,8 +15,7 @@ services:
     volumes:
       - adguard_work:/opt/adguardhome/work
       # - ./conf/AdGuardHome.yaml:/opt/adguardhome/conf/AdGuardHome.yaml
-      - adguard_conf:/opt/adguardhome/conf
+      - ./conf:/opt/adguardhome/conf
 
 volumes:
   adguard_work:
-  adguard_conf:

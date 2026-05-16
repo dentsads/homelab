@@ -1,5 +1,3 @@
-bind_host: 0.0.0.0
-bind_port: 3000
 auth_attempts: 5
 block_auth_min: 15
 http_proxy: ""
@@ -7,6 +5,8 @@ language: en
 theme: auto
 debug_pprof: false
 web_session_ttl: 720
+http:
+  address: 0.0.0.0:3005
 dns:
   bind_hosts:
     - 0.0.0.0
