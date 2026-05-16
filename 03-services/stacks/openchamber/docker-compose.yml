@@ -19,6 +19,8 @@ services:
       - UI_PASSWORD=${OPENCHAMBER_UI_PASSWORD}
       # Bind only to localhost (Caddy handles TLS/ingress)
       - OPENCHAMBER_HOST=127.0.0.1
+      # GitHub SSH key for git operations
+      - GITHUB_SSH_PRIVATE_KEY_B64=${GITHUB_SSH_PRIVATE_KEY_B64}
     volumes:
       - openchamber_config:/home/openchamber/.config/openchamber
       - openchamber_opencode_data:/home/openchamber/.local/share/opencode
