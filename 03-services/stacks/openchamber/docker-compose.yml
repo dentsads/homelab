@@ -9,12 +9,10 @@ services:
     restart: unless-stopped
     network_mode: host
     environment:
-      # Connect to the existing OpenCode server (must be running)
-      - OPENCODE_HOST=http://127.0.0.1:8085
+      # Connect to the existing OpenCode server with auth in URL
+      - OPENCODE_HOST=http://opencode:${OPENCODE_SERVER_PASSWORD}@127.0.0.1:8085
       # Skip starting a local OpenCode instance
       - OPENCODE_SKIP_START=true
-      # Server credentials for the OpenCode API
-      - OPENCODE_SERVER_PASSWORD=${OPENCODE_SERVER_PASSWORD}
       # Server credentials for the OpenCode API
       - OPENCODE_SERVER_PASSWORD=${OPENCODE_SERVER_PASSWORD}
       # Web UI password
@@ -27,7 +25,8 @@ services:
       - openchamber_opencode_state:/home/openchamber/.local/state/opencode
       - openchamber_opencode_config:/home/openchamber/.config/opencode
       - openchamber_ssh:/home/openchamber/.ssh
-      - openchamber_workspaces:/home/openchamber/workspaces
+      # Shared workspace with OpenCode server
+      - ../../../data/workspaces:/home/openchamber/workspaces
 
 volumes:
   openchamber_config:
@@ -35,4 +34,3 @@ volumes:
   openchamber_opencode_state:
   openchamber_opencode_config:
   openchamber_ssh:
-  openchamber_workspaces:

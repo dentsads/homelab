@@ -17,11 +17,11 @@ services:
     volumes:
       # Persistent storage for OpenCode config and auth
       - opencode_config:/root/.local/share/opencode
-      # Working directory for repositories
-      - opencode_workspace:/workspace
+      # Working directory for repositories (shared with OpenChamber)
+      - ../../../data/workspaces:/home/openchamber/workspaces
       # Pre-configured opencode.json
       - ./config/opencode.json:/root/.config/opencode/opencode.json:ro
-    working_dir: /workspace
+    working_dir: /home/openchamber/workspaces
     # Run the web server
     command: ["web", "--port", "8085", "--hostname", "0.0.0.0"]
     healthcheck:
@@ -33,4 +33,3 @@ services:
 
 volumes:
   opencode_config:
-  opencode_workspace:

@@ -66,6 +66,11 @@ COPY --from=builder /app/packages/web/bin ./packages/web/bin
 COPY --from=builder /app/packages/web/server ./packages/web/server
 COPY --from=builder /app/packages/web/dist ./packages/web/dist
 
+# Fix ownership after all COPY commands (files from builder stages are root-owned)
+USER root
+RUN chown -R openchamber:openchamber /home/openchamber
+USER openchamber
+
 EXPOSE 3000
 
 ENTRYPOINT ["sh", "/home/openchamber/openchamber-entrypoint.sh"]
