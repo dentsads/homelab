@@ -21,6 +21,8 @@ services:
       - OPENCHAMBER_HOST=127.0.0.1
       # GitHub SSH key for git operations
       - GITHUB_SSH_PRIVATE_KEY_B64=${GITHUB_SSH_PRIVATE_KEY_B64}
+      # GitHub Personal Access Token for gh CLI authentication
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
     volumes:
       - openchamber_config:/home/openchamber/.config/openchamber
       - openchamber_opencode_data:/home/openchamber/.local/share/opencode

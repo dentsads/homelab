@@ -151,3 +151,84 @@
         qm resize 9000 scsi0 +4G
         qm set 9000 --ipconfig0 ip=dhcp
         qm template 9000
+
+    # --- Sleep-On-LAN (UDP-only, complements WOL) ---
+    - name: Install unzip (required for sleep-on-lan extraction)
+      apt:
+        pkg: unzip
+        state: present
+
+    - name: Download sleep-on-lan release
+      get_url:
+        url: https://github.com/SR-G/sleep-on-lan/releases/download/1.1.1-RELEASE/SleepOnLAN-1.1.1-RELEASE.zip
+        dest: /tmp/SleepOnLAN-1.1.1-RELEASE.zip
+        force: false
+
+    - name: Create extraction directory for sleep-on-lan
+      file:
+        path: /tmp/sol-extract
+        state: directory
+
+    - name: Extract sleep-on-lan zip
+      unarchive:
+        src: /tmp/SleepOnLAN-1.1.1-RELEASE.zip
+        dest: /tmp/sol-extract
+        remote_src: true
+        creates: /tmp/sol-extract/linux_amd64/sol
+
+    - name: Install sol binary to /usr/local/bin
+      copy:
+        src: /tmp/sol-extract/linux_amd64/sol
+        dest: /usr/local/bin/sol
+        owner: root
+        group: root
+        mode: '0755'
+        remote_src: true
+
+    - name: Create sleep-on-lan config (UDP only)
+      copy:
+        dest: /etc/sleep-on-lan.json
+        owner: root
+        group: root
+        mode: '0644'
+        content: |
+          {
+            "Listeners": ["UDP:9"],
+            "LogLevel": "INFO",
+            "BroadcastIP": "192.168.255.255",
+            "Commands": [
+              {
+                "Operation": "sleep",
+                "Command": "systemctl poweroff",
+                "Default": true,
+                "Type": "external"
+              }
+            ]
+          }
+
+    - name: Create sleep-on-lan systemd service
+      copy:
+        dest: /etc/systemd/system/sleep-on-lan.service
+        owner: root
+        group: root
+        mode: '0644'
+        content: |
+          [Unit]
+          Description=Sleep-On-LAN daemon
+          After=network.target
+
+          [Service]
+          Type=simple
+          ExecStart=/usr/local/bin/sol --config /etc/sleep-on-lan.json
+          Restart=always
+          RestartSec=5
+
+          [Install]
+          WantedBy=multi-user.target
+
+    - name: Enable and start sleep-on-lan service
+      systemd:
+        name: sleep-on-lan
+        daemon_reload: true
+        enabled: true
+        state: started
