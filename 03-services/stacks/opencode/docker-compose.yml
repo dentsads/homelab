@@ -2,7 +2,9 @@ version: '3.8'
 
 services:
   opencode:
-    image: ghcr.io/anomalyco/opencode:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: opencode-server
     restart: unless-stopped
     environment:
@@ -11,12 +13,18 @@ services:
       # Server authentication
       - OPENCODE_SERVER_PASSWORD=${OPENCODE_SERVER_PASSWORD}
       - OPENCODE_SERVER_USERNAME=opencode
+      # GitHub SSH key for git operations
+      - GITHUB_SSH_PRIVATE_KEY_B64=${GITHUB_SSH_PRIVATE_KEY_B64}
+      # GitHub Personal Access Token for gh CLI authentication
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
     ports:
       # Bind to localhost only - Caddy will proxy
       - "127.0.0.1:8085:8085"
     volumes:
       # Persistent storage for OpenCode config and auth
       - opencode_config:/root/.local/share/opencode
+      # Docker socket for docker/act CLI
+      - /var/run/docker.sock:/var/run/docker.sock
       # Working directory for repositories (shared with OpenChamber)
       - ../../../data/workspaces:/home/openchamber/workspaces
       # Pre-configured opencode.json
