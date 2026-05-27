@@ -29,6 +29,8 @@ services:
       - openchamber_opencode_state:/home/openchamber/.local/state/opencode
       - openchamber_opencode_config:/home/openchamber/.config/opencode
       - openchamber_ssh:/home/openchamber/.ssh
+      # Docker socket for act CLI
+      - /var/run/docker.sock:/var/run/docker.sock
       # Shared workspace with OpenCode server
       - ../../../data/workspaces:/home/openchamber/workspaces
 

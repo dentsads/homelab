@@ -44,6 +44,14 @@ RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | d
   && apt-get update && apt-get install -y --no-install-recommends gh \
   && rm -rf /var/lib/apt/lists/*
 
+ARG DOCKER_VERSION=27.5.1
+RUN curl -fsSL "https://download.docker.com/linux/static/stable/x86_64/docker-${DOCKER_VERSION}.tgz" \
+  | tar -xz -C /usr/local/bin --strip-components=1 docker/docker
+
+ARG ACT_VERSION=0.2.75
+RUN curl -fsSL "https://github.com/nektos/act/releases/download/v${ACT_VERSION}/act_Linux_x86_64.tar.gz" \
+  | tar -xz -C /usr/local/bin act
+
 RUN userdel bun \
   && groupadd -g 1000 openchamber \
   && useradd -u 1000 -g 1000 -m -s /bin/bash openchamber \
@@ -77,7 +85,6 @@ COPY --from=builder /app/packages/web/dist ./packages/web/dist
 COPY ssh-setup.sh /home/openchamber/ssh-setup.sh
 USER root
 RUN chmod +x /home/openchamber/ssh-setup.sh && chown -R openchamber:openchamber /home/openchamber
-USER openchamber
 
 EXPOSE 3000
 
