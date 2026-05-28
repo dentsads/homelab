@@ -214,11 +214,16 @@ deploy_services() {
                     fi
                     
                     SECRETS_FILE=""
-                    if [ "$STACK_NAME" != "proxy" ]; then
+                    if [ "$STACK_NAME" == "proxy" ]; then
+                        mkdir -p /tmp/secrets
+                        cat > /tmp/secrets/proxy.env << EOF
+CLOUDFLARE_API_TOKEN=${CLOUDFLARE_API_TOKEN}
+EOF
+                    else
                         fetch_stack_secrets "$STACK_NAME"
-                        SECRETS_FILE="/tmp/secrets/$STACK_NAME.env"
-                        set -a; source "$SECRETS_FILE"; set +a
                     fi
+                    SECRETS_FILE="/tmp/secrets/$STACK_NAME.env"
+                    set -a; source "$SECRETS_FILE"; set +a
                     
                     echo "   ➡️  Processing stack: $STACK_NAME"
                     ansible-playbook -i inventory.ini 03-services/deploy_stack.yml \
@@ -233,11 +238,14 @@ deploy_services() {
                  rm inventory.ini; rm -rf "$SAFE_KEY_DIR"; exit 1
             fi
 
-            # Handle secrets: vaultwarden uses bootstrap, proxy needs none, others fetch
+            # Handle secrets: vaultwarden uses bootstrap, proxy generates from .env, others fetch
             if [ "$TARGET_STACK" == "vaultwarden" ]; then
                 generate_vaultwarden_secrets
             elif [ "$TARGET_STACK" == "proxy" ]; then
-                :
+                mkdir -p /tmp/secrets
+                cat > /tmp/secrets/proxy.env << EOF
+CLOUDFLARE_API_TOKEN=${CLOUDFLARE_API_TOKEN}
+EOF
             elif [ ! -f "/tmp/secrets/$TARGET_STACK.env" ]; then
                 bw_login_and_unlock
                 fetch_stack_secrets "$TARGET_STACK"
@@ -310,13 +318,12 @@ bw_login_and_unlock() {
         echo "✅ Already logged into Vaultwarden"
         return 0
     fi
-    echo "🔐 Logging into Vaultwarden..."
-    export NODE_TLS_REJECT_UNAUTHORIZED=0
-    bw config server "https://vw.${VM_IP}.nip.io" > /dev/null 2>&1
+    echo "🔐 Logging into Vaultwarden..."    
+    bw config server "${VAULTWARDEN_URL}"
     bw logout > /dev/null 2>&1 || true
     export BW_CLIENTID="$VAULTWARDEN_BW_CLIENTID"
     export BW_CLIENTSECRET="$VAULTWARDEN_BW_CLIENTSECRET"
-    if ! bw login --apikey > /dev/null 2>&1; then
+    if ! bw login --apikey; then
         echo "❌ Vaultwarden login failed. Check VAULTWARDEN_BW_CLIENTID/SECRET in .env"
         exit 1
     fi

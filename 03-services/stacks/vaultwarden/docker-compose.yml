@@ -19,7 +19,7 @@ services:
       
       # 3. Domain URL (Important for invitation links)
       # Replace with your actual VM IP or Domain
-      - DOMAIN=https://vw.192.168.0.253.nip.io
+      - DOMAIN=https://vw.homelab.548796327.xyz
 
       # 4. WebSocket (for instant sync)
       - WEBSOCKET_ENABLED=true

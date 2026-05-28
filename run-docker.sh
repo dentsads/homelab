@@ -23,20 +23,13 @@ fi
 echo "🐳 Entering Container Environment..."
 echo "   (Your local repo is mounted at /app)"
 
-# 3. Resolve VM IP for Vaultwarden DNS (bw CLI needs to connect to internal Vaultwarden)
-VM_IP=$(jq -r .vm.ip config.json 2>/dev/null || echo "")
-HOST_ENTRY=""
-if [ -n "$VM_IP" ]; then
-    HOST_ENTRY="--add-host vw.${VM_IP}.nip.io:${VM_IP}"
-fi
-
 docker run --rm -it \
     --privileged \
     --net host \
+    --dns 1.1.1.1 \
     -v /dev:/dev \
     -v "$(pwd)":/app \
     -v "$HOME/.ssh":/root/.ssh \
     $SSH_AGENT_ARGS \
-    $HOST_ENTRY \
     $IMAGE_NAME \
     ./deploy.sh "$@"

@@ -1,8 +1,6 @@
-version: '3.8'
-
 services:
   caddy:
-    image: caddy:2-alpine
+    build: .
     container_name: central_proxy
     restart: unless-stopped
     # Host mode allows Caddy to see 'localhost' ports opened by other stacks
@@ -13,6 +11,7 @@ services:
       - caddy_config:/config
     environment:
       - ACME_AGREE=true
+      - CLOUDFLARE_API_TOKEN=${CLOUDFLARE_API_TOKEN}
 
 volumes:
   caddy_data:

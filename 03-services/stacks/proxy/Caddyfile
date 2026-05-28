@@ -1,60 +1,48 @@
+{
+    acme_dns cloudflare {env.CLOUDFLARE_API_TOKEN}
+}
+
 # --- Home Assistant ---
-ha.192.168.0.253.nip.io {
-    tls internal
+ha.homelab.548796327.xyz {
     reverse_proxy 127.0.0.1:8123
 }
 
 # --- Vaultwarden ---
-vw.192.168.0.253.nip.io {
-    tls internal
+vw.homelab.548796327.xyz {
     reverse_proxy 127.0.0.1:8081
 }
 
-# --- Portainer (Optional) ---
-portainer.192.168.0.253.nip.io {
-    tls internal
+# --- Portainer ---
+portainer.homelab.548796327.xyz {
     reverse_proxy 127.0.0.1:9000
 }
 
 # --- WireGuard Web UI ---
-wg.192.168.0.253.nip.io {
-    tls internal
+wg.homelab.548796327.xyz {
     reverse_proxy 127.0.0.1:51821
 }
 
 # --- Stirling PDF ---
-pdf.192.168.0.253.nip.io {
-    tls internal
+pdf.homelab.548796327.xyz {
     reverse_proxy 127.0.0.1:8082
 }
 
 # --- OpenCode ---
-opencode.192.168.0.253.nip.io {
-    tls internal
+opencode.homelab.548796327.xyz {
     reverse_proxy 127.0.0.1:8085
 }
 
 # --- OpenChamber ---
-openchamber.192.168.0.253.nip.io {
-    tls internal
+openchamber.homelab.548796327.xyz {
     reverse_proxy 127.0.0.1:3000
 }
 
 # --- qBittorrent (via VPN) ---
-torrent.192.168.0.253.nip.io {
-    tls internal
+torrent.homelab.548796327.xyz {
     reverse_proxy 127.0.0.1:8090
 }
 
-# --- Portainer (Optional) ---
-portainer.home.lab {
-    tls internal
-    reverse_proxy 127.0.0.1:9000
-}
-
-
 # --- Adguard ---
-adguard.192.168.0.253.nip.io {
-    tls internal
+adguard.homelab.548796327.xyz {
     reverse_proxy 127.0.0.1:3005
 }
