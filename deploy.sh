@@ -304,53 +304,6 @@ deploy_services() {
     rm -rf "$SAFE_KEY_DIR"
 }
 
-# --- FUNCTION: BW AUTH ---
-bw_login_and_unlock() {
-    if [ -n "$BW_SESSION" ]; then
-        echo "✅ Already logged into Vaultwarden"
-        return 0
-    fi
-    echo "🔐 Logging into Vaultwarden..."
-    export NODE_TLS_REJECT_UNAUTHORIZED=0
-    bw config server "https://vw.${VM_IP}.nip.io" > /dev/null 2>&1
-    bw logout > /dev/null 2>&1 || true
-    export BW_CLIENTID="$VAULTWARDEN_BW_CLIENTID"
-    export BW_CLIENTSECRET="$VAULTWARDEN_BW_CLIENTSECRET"
-    if ! bw login --apikey > /dev/null 2>&1; then
-        echo "❌ Vaultwarden login failed. Check VAULTWARDEN_BW_CLIENTID/SECRET in .env"
-        exit 1
-    fi
-    export BW_SESSION=$(echo "$VAULTWARDEN_BW_PASSWORD" | bw unlock --raw)
-    bw sync
-    echo "✅ Vaultwarden session established"
-}
-
-# --- FUNCTION: FETCH SECRETS ---
-fetch_stack_secrets() {
-    local stack_name=$1
-    mkdir -p /tmp/secrets
-    local output_file="/tmp/secrets/${stack_name}.env"
-
-    rm -f "$output_file"
-    if ! bw get item "$stack_name" > /dev/null 2>&1; then
-        echo "❌ Vaultwarden item '$stack_name' not found in vault."
-        echo "   Create a Login item named '$stack_name' in the Deployment collection"
-        echo "   with Custom Fields matching the env vars for that stack."
-        exit 1
-    fi
-
-    bw get item "$stack_name" | jq -r '.fields[] | "\(.name)=\(.value)"' | sed 's/\$/$$/g' > "$output_file"
-    echo "✅ Fetched secrets for '$stack_name' ($(wc -l < "$output_file") vars)"
-}
-
-# --- FUNCTION: GENERATE VAULTWARDEN BOOTSTRAP SECRETS ---
-generate_vaultwarden_secrets() {
-    mkdir -p /tmp/secrets
-    local salt=$(openssl rand -base64 32)
-    local hash=$(printf '%s' "$VAULTWARDEN_ADMIN_TOKEN" | argon2 "$salt" -e -id -k 65540 -t 3 -p 4)
-    printf "VAULTWARDEN_ADMIN_TOKEN=%s\n" "$hash" | sed 's/\$/$$/g' > /tmp/secrets/vaultwarden.env
-}
-
 # --- MENU ---
 case "$1" in
     iso)
