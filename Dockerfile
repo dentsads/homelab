@@ -6,6 +6,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 # xorriso: for ISO creation
 # jq: for JSON parsing in scripts
 # openssh-client: for Ansible connections
+# argon2: for Vaultwarden admin token hashing
 RUN apt-get update && apt-get install -y \
     wget \
     curl \
@@ -17,6 +18,8 @@ RUN apt-get update && apt-get install -y \
     xorriso \
     jq \
     openssh-client \
+    openssl \
+    argon2 \
     && rm -rf /var/lib/apt/lists/*
 
 # 2. Install Proxmox Auto Install Assistant (via Apt)
@@ -34,7 +37,14 @@ RUN wget -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor -o /usr/shar
     apt-get install -y terraform && \
     rm -rf /var/lib/apt/lists/*
 
-# 4. Install Ansible & Libs (Via PIP into Python 3.12)
+# 4. Install Bitwarden CLI (for Vaultwarden secret injection)
+ARG BW_CLI_VERSION=2025.2.0
+RUN wget -q "https://github.com/bitwarden/clients/releases/download/cli-v${BW_CLI_VERSION}/bw-linux-${BW_CLI_VERSION}.zip" -O /tmp/bw.zip \
+    && unzip -o /tmp/bw.zip -d /usr/local/bin \
+    && rm /tmp/bw.zip \
+    && bw --version
+
+# 5. Install Ansible & Libs (Via PIP into Python 3.12)
 # 'passlib' is required for the Ansible 'password_hash' filter used in your templates
 RUN pip install --no-cache-dir --upgrade \
     ansible \
@@ -42,8 +52,8 @@ RUN pip install --no-cache-dir --upgrade \
     requests \
     passlib
 
-# 5. Setup Environment
+# 6. Setup Environment
 WORKDIR /app
 
-# 5. Default Command
+# 7. Default Command
 CMD ["/bin/bash"]
