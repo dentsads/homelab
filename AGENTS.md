@@ -66,6 +66,9 @@ Parse with `jq -r .host.ip config.json`, etc.
 - Only **Docker named volumes** are backed up (`/var/lib/docker/volumes/`). Bind mounts are silently ignored.
 - `services delete <name>` keeps volumes so `services restore <name>` can overwrite them, then `services deploy <name>` re-attaches.
 - Backups land in `./backups/<stack>/` on the controller (gitignored).
+- If `.env` has `BACKUP_ENCRYPTION_PASSPHRASE` set, each volume is **AES256 GPG-encrypted** locally before storage. The plain `.tar.gz` is removed; only `.tar.gz.gpg` remains on disk.
+- If `.env` has `S3_BUCKET` and credentials set, encrypted backups are also **synced to S3** with dated keys (`<stack>/<volume>_<timestamp>.tar.gz.gpg`). Old backups accumulate — prune via S3 lifecycle or manual cleanup.
+- Restore priority: S3 (latest) → local `.tar.gz.gpg` → local `.tar.gz` (backward compatible).
 
 ## Services layer commands
 

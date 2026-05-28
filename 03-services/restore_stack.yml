@@ -11,6 +11,35 @@
         msg: "You must provide a 'stack_name' variable."
       when: stack_name is undefined
 
+    # --- Phase 1: Download from S3 (if configured) ---
+    - block:
+        - name: Download latest backups from S3
+          include_tasks: tasks/s3_download_stack_task.yml
+      rescue:
+        - name: Warn S3 download failed
+          debug:
+            msg: "S3 download failed -- falling back to local backups"
+      when: s3_bucket is defined and s3_bucket | length > 0
+
+    # --- Phase 2: Decrypt any encrypted files (if passphrase provided) ---
+    - name: Find encrypted backups
+      delegate_to: localhost
+      become: no
+      find:
+        paths: "{{ local_backup_dir }}/{{ stack_name }}"
+        patterns: "*.tar.gz.gpg"
+      register: encrypted_backups
+
+    - name: Decrypt encrypted backups
+      include_tasks: tasks/decrypt_volume_task.yml
+      loop: "{{ encrypted_backups.files }}"
+      loop_control:
+        loop_var: backup_item
+      when:
+        - backup_encryption_passphrase is defined and backup_encryption_passphrase | length > 0
+        - encrypted_backups.matched is defined and encrypted_backups.matched > 0
+
+    # --- Phase 3: Restore from .tar.gz (existing logic) ---
     - name: Find local backup files for this stack
       delegate_to: localhost
       become: no

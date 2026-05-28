@@ -1,0 +1,17 @@
+---
+- name: "Decrypt: {{ backup_item.path | basename }}"
+  delegate_to: localhost
+  become: no
+  command: >
+    gpg --decrypt --cipher-algo AES256
+    --passphrase "{{ backup_encryption_passphrase }}"
+    --batch --yes --no-symkey-cache
+    -o "{{ backup_item.path | replace('.tar.gz.gpg', '.tar.gz') }}"
+    "{{ backup_item.path }}"
+
+- name: "Remove encrypted: {{ backup_item.path | basename }}"
+  delegate_to: localhost
+  become: no
+  file:
+    path: "{{ backup_item.path }}"
+    state: absent

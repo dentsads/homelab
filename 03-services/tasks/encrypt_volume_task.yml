@@ -1,0 +1,17 @@
+---
+- name: "Encrypt: {{ volume_name }}.tar.gz"
+  delegate_to: localhost
+  become: no
+  command: >
+    gpg --symmetric --cipher-algo AES256
+    --passphrase "{{ backup_encryption_passphrase }}"
+    --batch --yes --no-symkey-cache
+    -o "{{ local_backup_dir }}/{{ stack_name }}/{{ volume_name }}.tar.gz.gpg"
+    "{{ local_backup_dir }}/{{ stack_name }}/{{ volume_name }}.tar.gz"
+
+- name: "Remove unencrypted: {{ volume_name }}.tar.gz"
+  delegate_to: localhost
+  become: no
+  file:
+    path: "{{ local_backup_dir }}/{{ stack_name }}/{{ volume_name }}.tar.gz"
+    state: absent

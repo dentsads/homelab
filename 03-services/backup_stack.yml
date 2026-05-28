@@ -51,3 +51,34 @@
       shell: docker compose start
       args:
         chdir: "/opt/stacks/{{ stack_name }}"
+
+    # --- Encrypt & sync to S3 (controller-side, optional) ---
+    - name: Set backup timestamp
+      delegate_to: localhost
+      become: no
+      command: date +%Y-%m-%d_%H%M%S
+      register: backup_timestamp_result
+      when: backup_encryption_passphrase is defined and backup_encryption_passphrase | length > 0
+
+    - name: Record timestamp fact
+      delegate_to: localhost
+      become: no
+      set_fact:
+        backup_timestamp: "{{ backup_timestamp_result.stdout }}"
+      when: backup_timestamp_result is defined and backup_timestamp_result.stdout is defined
+
+    - name: Encrypt local backups
+      include_tasks: tasks/encrypt_volume_task.yml
+      loop: "{{ stack_volumes.stdout_lines }}"
+      loop_control:
+        loop_var: volume_name
+      when: backup_encryption_passphrase is defined and backup_encryption_passphrase | length > 0
+
+    - name: Upload encrypted backups to S3
+      include_tasks: tasks/s3_upload_task.yml
+      loop: "{{ stack_volumes.stdout_lines }}"
+      loop_control:
+        loop_var: volume_name
+      when:
+        - s3_bucket is defined and s3_bucket | length > 0
+        - backup_encryption_passphrase is defined and backup_encryption_passphrase | length > 0

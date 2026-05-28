@@ -1,0 +1,12 @@
+---
+- name: Download latest encrypted S3 backups for stack
+  delegate_to: localhost
+  become: no
+  command: python3 "{{ playbook_dir }}/tasks/s3_download_stack.py"
+  environment:
+    AWS_ACCESS_KEY_ID: "{{ s3_access_key_id }}"
+    AWS_SECRET_ACCESS_KEY: "{{ s3_secret_access_key }}"
+    AWS_DEFAULT_REGION: "{{ s3_region }}"
+    S3_BUCKET: "{{ s3_bucket }}"
+    STACK_NAME: "{{ stack_name }}"
+    BACKUP_DIR: "{{ playbook_dir }}/{{ local_backup_dir }}"

@@ -50,7 +50,8 @@ RUN pip install --no-cache-dir --upgrade \
     ansible \
     proxmoxer \
     requests \
-    passlib
+    passlib \
+    awscli
 
 # 6. Setup Environment
 WORKDIR /app

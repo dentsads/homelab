@@ -1,0 +1,12 @@
+---
+- name: "Upload to S3: {{ volume_name }}"
+  delegate_to: localhost
+  become: no
+  command: >
+    aws s3 cp
+    "{{ local_backup_dir }}/{{ stack_name }}/{{ volume_name }}.tar.gz.gpg"
+    "s3://{{ s3_bucket }}/{{ stack_name }}/{{ volume_name }}_{{ backup_timestamp }}.tar.gz.gpg"
+  environment:
+    AWS_ACCESS_KEY_ID: "{{ s3_access_key_id }}"
+    AWS_SECRET_ACCESS_KEY: "{{ s3_secret_access_key }}"
+    AWS_DEFAULT_REGION: "{{ s3_region }}"

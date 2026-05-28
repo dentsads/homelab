@@ -289,14 +289,14 @@ EOF
         
         echo "💾 Backing up volumes for stack: $TARGET_STACK ..."
         ansible-playbook -i inventory.ini 03-services/backup_stack.yml \
-            --extra-vars "stack_name=$TARGET_STACK"
+            --extra-vars "stack_name=$TARGET_STACK backup_encryption_passphrase=$BACKUP_ENCRYPTION_PASSPHRASE s3_bucket=$S3_BUCKET s3_access_key_id=$S3_ACCESS_KEY_ID s3_secret_access_key=$S3_SECRET_ACCESS_KEY s3_region=$S3_REGION"
 
     elif [ "$SUB_CMD" == "restore" ]; then
         if [ -z "$TARGET_STACK" ]; then echo "❌ Specify stack name."; exit 1; fi
 
         echo "♻️  Restoring volumes for stack: $TARGET_STACK ..."
         ansible-playbook -i inventory.ini 03-services/restore_stack.yml \
-            --extra-vars "stack_name=$TARGET_STACK"
+            --extra-vars "stack_name=$TARGET_STACK backup_encryption_passphrase=$BACKUP_ENCRYPTION_PASSPHRASE s3_bucket=$S3_BUCKET s3_access_key_id=$S3_ACCESS_KEY_ID s3_secret_access_key=$S3_SECRET_ACCESS_KEY s3_region=$S3_REGION"
             
     else
         echo "❌ Unknown command."
