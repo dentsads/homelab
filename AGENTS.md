@@ -32,6 +32,17 @@ ssh-add ~/.ssh/id_ed25519
 
 No layer can be skipped — each depends on the previous.
 
+## Secrets: bootstrap .env + Vaultwarden
+
+The `.env` holds only **bootstrap secrets** (infrastructure creds + Vaultwarden deploy-bot API key). All runtime service secrets live in Vaultwarden items under the "Deployment" collection.
+
+The `all` deploy flow:
+1. Deploys vaultwarden with bootstrap `VAULTWARDEN_ADMIN_TOKEN`
+2. Authenticates via `bw login --apikey` as the deploy-bot user
+3. Fetches per-stack secrets via `bw get item <stack_name>`
+4. Passes them as `secrets_env_file` to `deploy_stack.yml`
+5. Docker Compose reads them via `--env-file secrets.env`
+
 ## config.json is the single source of truth
 
 | Key | Used by |

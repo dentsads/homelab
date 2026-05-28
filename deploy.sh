@@ -192,23 +192,67 @@ deploy_services() {
         
         if [ "$TARGET_STACK" == "all" ] || [ -z "$TARGET_STACK" ]; then
             echo "📦 Deploying ALL stacks defined in 03-services/stacks/..."
+
+            # Deploy vaultwarden first with bootstrap secrets
+            generate_vaultwarden_secrets
+            for stack_dir in 03-services/stacks/*; do
+                if [ -d "$stack_dir" ] && [ "$(basename "$stack_dir")" == "vaultwarden" ]; then
+                    echo "   ➡️  Processing stack: vaultwarden"
+                    SECRETS_FILE="/tmp/secrets/vaultwarden.env"
+                    ansible-playbook -i inventory.ini 03-services/deploy_stack.yml \
+                        --extra-vars "stack_name=vaultwarden secrets_env_file=$SECRETS_FILE"
+                fi
+            done
+
+            # Login and fetch secrets for remaining stacks
+            bw_login_and_unlock
             for stack_dir in 03-services/stacks/*; do
                 if [ -d "$stack_dir" ]; then
                     STACK_NAME=$(basename "$stack_dir")
+                    if [ "$STACK_NAME" == "vaultwarden" ]; then
+                        continue
+                    fi
+                    
+                    SECRETS_FILE=""
+                    if [ "$STACK_NAME" != "proxy" ]; then
+                        fetch_stack_secrets "$STACK_NAME"
+                        SECRETS_FILE="/tmp/secrets/$STACK_NAME.env"
+                        set -a; source "$SECRETS_FILE"; set +a
+                    fi
+                    
                     echo "   ➡️  Processing stack: $STACK_NAME"
                     ansible-playbook -i inventory.ini 03-services/deploy_stack.yml \
-                        --extra-vars "stack_name=$STACK_NAME"
+                        --extra-vars "stack_name=$STACK_NAME${SECRETS_FILE:+ secrets_env_file=$SECRETS_FILE}"
                 fi
             done
             echo "✅ All stacks deployed."
+            rm -rf /tmp/secrets
         else
             if [ ! -d "03-services/stacks/$TARGET_STACK" ]; then
                  echo "❌ Error: Stack '$TARGET_STACK' not found locally."
                  rm inventory.ini; rm -rf "$SAFE_KEY_DIR"; exit 1
             fi
+
+            # Handle secrets: vaultwarden uses bootstrap, proxy needs none, others fetch
+            if [ "$TARGET_STACK" == "vaultwarden" ]; then
+                generate_vaultwarden_secrets
+            elif [ "$TARGET_STACK" == "proxy" ]; then
+                :
+            elif [ ! -f "/tmp/secrets/$TARGET_STACK.env" ]; then
+                bw_login_and_unlock
+                fetch_stack_secrets "$TARGET_STACK"
+            fi
+
+            SECRETS_FILE=""
+            if [ -f "/tmp/secrets/$TARGET_STACK.env" ]; then
+                if [ "$TARGET_STACK" != "vaultwarden" ]; then
+                    set -a; source "/tmp/secrets/$TARGET_STACK.env"; set +a
+                fi
+                SECRETS_FILE="/tmp/secrets/$TARGET_STACK.env"
+            fi
             echo "📦 Deploying Single Stack: $TARGET_STACK ..."
             ansible-playbook -i inventory.ini 03-services/deploy_stack.yml \
-                --extra-vars "stack_name=$TARGET_STACK"
+                --extra-vars "stack_name=$TARGET_STACK${SECRETS_FILE:+ secrets_env_file=$SECRETS_FILE}"
         fi
 
     elif [ "$SUB_CMD" == "delete" ]; then
@@ -260,6 +304,53 @@ deploy_services() {
     rm -rf "$SAFE_KEY_DIR"
 }
 
+# --- FUNCTION: BW AUTH ---
+bw_login_and_unlock() {
+    if [ -n "$BW_SESSION" ]; then
+        echo "✅ Already logged into Vaultwarden"
+        return 0
+    fi
+    echo "🔐 Logging into Vaultwarden..."
+    export NODE_TLS_REJECT_UNAUTHORIZED=0
+    bw config server "https://vw.${VM_IP}.nip.io" > /dev/null 2>&1
+    bw logout > /dev/null 2>&1 || true
+    export BW_CLIENTID="$VAULTWARDEN_BW_CLIENTID"
+    export BW_CLIENTSECRET="$VAULTWARDEN_BW_CLIENTSECRET"
+    if ! bw login --apikey > /dev/null 2>&1; then
+        echo "❌ Vaultwarden login failed. Check VAULTWARDEN_BW_CLIENTID/SECRET in .env"
+        exit 1
+    fi
+    export BW_SESSION=$(echo "$VAULTWARDEN_BW_PASSWORD" | bw unlock --raw)
+    bw sync
+    echo "✅ Vaultwarden session established"
+}
+
+# --- FUNCTION: FETCH SECRETS ---
+fetch_stack_secrets() {
+    local stack_name=$1
+    mkdir -p /tmp/secrets
+    local output_file="/tmp/secrets/${stack_name}.env"
+
+    rm -f "$output_file"
+    if ! bw get item "$stack_name" > /dev/null 2>&1; then
+        echo "❌ Vaultwarden item '$stack_name' not found in vault."
+        echo "   Create a Login item named '$stack_name' in the Deployment collection"
+        echo "   with Custom Fields matching the env vars for that stack."
+        exit 1
+    fi
+
+    bw get item "$stack_name" | jq -r '.fields[] | "\(.name)=\(.value)"' | sed 's/\$/$$/g' > "$output_file"
+    echo "✅ Fetched secrets for '$stack_name' ($(wc -l < "$output_file") vars)"
+}
+
+# --- FUNCTION: GENERATE VAULTWARDEN BOOTSTRAP SECRETS ---
+generate_vaultwarden_secrets() {
+    mkdir -p /tmp/secrets
+    local salt=$(openssl rand -base64 32)
+    local hash=$(printf '%s' "$VAULTWARDEN_ADMIN_TOKEN" | argon2 "$salt" -e -id -k 65540 -t 3 -p 4)
+    printf "VAULTWARDEN_ADMIN_TOKEN=%s\n" "$hash" | sed 's/\$/$$/g' > /tmp/secrets/vaultwarden.env
+}
+
 # --- MENU ---
 case "$1" in
     iso)
@@ -282,7 +373,28 @@ case "$1" in
         configure_host
         provision_infra
         deploy_services install
-        deploy_services deploy all
+
+        # Phase 1: Deploy vaultwarden with bootstrap ADMIN_TOKEN
+        echo "📦 Deploying vaultwarden (bootstrap phase)..."
+        generate_vaultwarden_secrets
+        deploy_services deploy vaultwarden
+
+        # Phase 2: Login to Vaultwarden
+        bw_login_and_unlock
+
+        # Phase 3: Deploy remaining stacks with fetched secrets
+        echo "📦 Deploying remaining stacks..."
+        for stack_dir in 03-services/stacks/*; do
+            if [ -d "$stack_dir" ]; then
+                STACK_NAME=$(basename "$stack_dir")
+                if [ "$STACK_NAME" != "vaultwarden" ]; then
+                    fetch_stack_secrets "$STACK_NAME"
+                    deploy_services deploy "$STACK_NAME"
+                fi
+            fi
+        done
+        echo "✅ All stacks deployed."
+        rm -rf /tmp/secrets
         ;;
     *)
         echo "Usage: $0 {iso|flash|host|infra [destroy]|services {install|deploy <stack>|deploy all}|all}"

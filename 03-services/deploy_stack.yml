@@ -31,13 +31,14 @@
         # Ensure directories inside are executable
         directory_mode: '0755'
 
-    - name: Inject Secrets (.env)
+    - name: Inject Stack Secrets
       copy:
-        src: "../.env"
-        dest: "{{ remote_stacks_dir }}/{{ stack_name }}/.env"
+        src: "{{ secrets_env_file }}"
+        dest: "{{ remote_stacks_dir }}/{{ stack_name }}/secrets.env"
         owner: debian
         group: docker
         mode: '0600'
+      when: secrets_env_file is defined
 
     - name: Prepare AdGuard Configuration
       block:
@@ -70,13 +71,17 @@
       when: stack_name == 'adguard'
 
     - name: Deploy Stack '{{ stack_name }}'
-      shell: docker compose up -d --remove-orphans
+      shell: >
+        docker compose
+        {% if secrets_env_file is defined %}--env-file secrets.env{% endif %}
+        up -d --remove-orphans
       args:
         chdir: "{{ remote_stacks_dir }}/{{ stack_name }}"
       register: compose_out
       changed_when: "'Created' in compose_out.stderr or 'Recreated' in compose_out.stderr"
 
-    - name: Remove Secrets (.env) for security
+    - name: Remove Secrets (secrets.env) for security
       file:
-        path: "{{ remote_stacks_dir }}/{{ stack_name }}/.env"
+        path: "{{ remote_stacks_dir }}/{{ stack_name }}/secrets.env"
         state: absent
+      when: secrets_env_file is defined
