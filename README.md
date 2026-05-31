@@ -115,6 +115,18 @@ If you need to run specific parts of the pipeline separately:
 * `./run-docker.sh infra`	Runs Terraform to create/update VMs.
 * `./run-docker.sh services`	Runs Ansible to install Docker and deploy containers.
 
+## 🔑 Secrets Management
+
+The `.env` file holds only **bootstrap secrets** (infrastructure credentials, Vaultwarden deploy-bot API key). All runtime service secrets (API tokens, database passwords, etc.) are stored in **Vaultwarden**.
+
+Secrets are organized into **Collections** named after each stack. Each secret is a **Login item** where:
+- **Username** = the env var name (e.g. `GITHUB_TOKEN`)
+- **Password** = the env var value
+
+Secrets shared between stacks (e.g. a GitHub token used by multiple services) are assigned to all relevant Collections — defined once, used everywhere.
+
+For full operational details, see [`AGENTS.md`](./AGENTS.md#secrets-bootstrap-env--vaultwarden).
+
 ## Wake-On-LAN
 
 In order to be able to use wake on lan you need to install the `ẁakeonlan` cli 

@@ -337,17 +337,28 @@ fetch_stack_secrets() {
     local stack_name=$1
     mkdir -p /tmp/secrets
     local output_file="/tmp/secrets/${stack_name}.env"
-
     rm -f "$output_file"
-    if ! bw get item "$stack_name" > /dev/null 2>&1; then
-        echo "❌ Vaultwarden item '$stack_name' not found in vault."
-        echo "   Create a Login item named '$stack_name' in the Deployment collection"
-        echo "   with Custom Fields matching the env vars for that stack."
+
+    local collection_id
+    collection_id=$(bw list collections | jq -r --arg name "$stack_name" \
+        '.[] | select(.name == $name) | .id')
+
+    if [ -z "$collection_id" ]; then
+        echo "❌ Collection '$stack_name' not found in Vaultwarden."
+        echo "   Create a Collection named '$stack_name' in the Deployment organization"
+        echo "   and assign Login items to it (username=env var name, password=value)."
         exit 1
     fi
 
-    bw get item "$stack_name" | jq -r '.fields[] | "\(.name)=\(.value)"' | sed 's/\$/$$/g' > "$output_file"
-    echo "✅ Fetched secrets for '$stack_name' ($(wc -l < "$output_file") vars)"
+    bw list items | jq -r --arg cid "$collection_id" '
+        .[] | select(.collectionIds | index($cid)) |
+        select(.login != null and .login.username != null) |
+        "\(.login.username)=\(.login.password)"
+    ' | sed 's/\$/$$/g' > "$output_file"
+
+    local count
+    count=$(wc -l < "$output_file")
+    echo "✅ Fetched $count secrets from collection '$stack_name'"
 }
 
 # --- FUNCTION: GENERATE VAULTWARDEN BOOTSTRAP SECRETS ---

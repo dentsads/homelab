@@ -34,14 +34,33 @@ No layer can be skipped — each depends on the previous.
 
 ## Secrets: bootstrap .env + Vaultwarden
 
-The `.env` holds only **bootstrap secrets** (infrastructure creds + Vaultwarden deploy-bot API key). All runtime service secrets live in Vaultwarden items under the "Deployment" collection.
+The `.env` holds only **bootstrap secrets** (infrastructure creds + Vaultwarden deploy-bot API key). All runtime service secrets live in Vaultwarden as **Login-type items** organized into **per-stack Collections**.
+
+### Item schema
+
+Each env var is a **Login item**:
+| Field | Stores |
+|---|---|
+| **Name** | Human-readable label (e.g. "Github Token") |
+| **Username** | Env var name (e.g. `GITHUB_TOKEN`) |
+| **Password** | Env var value (e.g. `ghp_abc123`) |
+
+Items are assigned to Collections named after each stack (e.g. `opencode`, `openchamber`). A shared secret (e.g. `GITHUB_TOKEN`) belongs to **all** Collections that need it — no duplication.
+
+### Deploy flow
 
 The `all` deploy flow:
 1. Deploys vaultwarden with bootstrap `VAULTWARDEN_ADMIN_TOKEN`
 2. Authenticates via `bw login --apikey` as the deploy-bot user
-3. Fetches per-stack secrets via `bw get item <stack_name>`
-4. Passes them as `secrets_env_file` to `deploy_stack.yml`
-5. Docker Compose reads them via `--env-file secrets.env`
+3. Resolves stack name → Collection ID, lists all items in that Collection, and writes `username=password` pairs to a per-stack env file
+4. Passes the env file as `secrets_env_file` to `deploy_stack.yml`
+5. Ansible copies it to the remote as `secrets.env`; Docker Compose reads it via `--env-file`
+
+### Adding a shared secret
+
+1. Create a **Login item** in Vaultwarden (username = env var name, password = value)
+2. Assign it to the Collections of all stacks that need it
+3. No code changes required — the next deploy picks it up automatically
 
 ## config.json is the single source of truth
 
