@@ -14,12 +14,12 @@ resource "proxmox_vm_qemu" "docker_node" {
     cores = 4
   }
   
-  memory  = 4096
+  memory  = 8192
   scsihw  = "virtio-scsi-pci"
   
   disk {
     slot    = "scsi0"
-    size    = "20G"
+    size    = "40G"
     type    = "disk"
     storage = "local-lvm"
     discard = true
