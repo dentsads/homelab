@@ -10,6 +10,8 @@ services:
     environment:
       # OpenRouter API Key for LLM access
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      # Opencode Zen API Key for LLM access
+      - OPENCODE_ZEN_API_KEY=${OPENCODE_ZEN_API_KEY}      
       # Server authentication
       - OPENCODE_SERVER_PASSWORD=${OPENCODE_SERVER_PASSWORD}
       - OPENCODE_SERVER_USERNAME=${OPENCODE_SERVER_USERNAME}
