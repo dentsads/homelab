@@ -46,3 +46,13 @@ torrent.homelab.548796327.xyz {
 adguard.homelab.548796327.xyz {
     reverse_proxy 127.0.0.1:3005
 }
+
+# --- Reserved ports 30000-32000 for qa stage ---
+*.qa.homelab.548796327.xyz {
+    @portRange header_regexp Host ^(3[0-1][0-9]{3}|32000)\.qa\.homelab\.548796327\.xyz$
+
+    route {
+        reverse_proxy @portRange 127.0.0.1:{labels.4}
+        respond "Access denied. Port must be between 30000 and 32000." 403
+    }
+}
