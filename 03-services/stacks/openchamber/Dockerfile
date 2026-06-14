@@ -3,7 +3,7 @@
 # Stage 1: Clone the openchamber repo at a pinned tag
 FROM alpine/git AS repo
 WORKDIR /src
-RUN git clone --depth 1 --branch v1.10.4 https://github.com/openchamber/openchamber.git .
+RUN git clone --depth 1 --branch v1.12.4 https://github.com/openchamber/openchamber.git .
 
 # Stage 2: Patch the lockfile (upstream bun.lock is out of date with package.json)
 FROM oven/bun:1 AS deps
@@ -11,8 +11,9 @@ WORKDIR /app
 COPY --from=repo /src/package.json /src/bun.lock ./
 COPY --from=repo /src/packages/ui/package.json ./packages/ui/
 COPY --from=repo /src/packages/web/package.json ./packages/web/
-COPY --from=repo /src/packages/desktop/package.json ./packages/desktop/
+COPY --from=repo /src/packages/electron/package.json ./packages/electron/
 COPY --from=repo /src/packages/vscode/package.json ./packages/vscode/
+
 # NOTE: --frozen-lockfile removed because upstream lockfile is stale
 RUN bun install --ignore-scripts
 
@@ -67,7 +68,7 @@ RUN npm config set prefix /home/openchamber/.npm-global && mkdir -p /home/opench
   mkdir -p /home/openchamber/.local /home/openchamber/.config /home/openchamber/.ssh && \
   npm install -g opencode-ai yarn
 
-COPY --from=cloudflare/cloudflared@sha256:6b599ca3e974349ead3286d178da61d291961182ec3fe9c505e1dd02c8ac31b0 /usr/local/bin/cloudflared /usr/local/bin/cloudflared
+COPY --from=cloudflare/cloudflared@sha256:ba461b8aa9c042156dbd39c38657fe7431bafa063220eab8d5330a523863da9f /usr/local/bin/cloudflared /usr/local/bin/cloudflared
 
 ENV NODE_ENV=production
 
