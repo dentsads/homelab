@@ -15,4 +15,5 @@ if [ -S /var/run/docker.sock ]; then
     usermod -aG "$(getent group "$DOCKER_GID" | cut -d: -f1)" openchamber
 fi
 
-exec su openchamber -c "sh /home/openchamber/openchamber-entrypoint.sh"
+umask 002
+exec su openchamber -c "umask 002; sh /home/openchamber/openchamber-entrypoint.sh"

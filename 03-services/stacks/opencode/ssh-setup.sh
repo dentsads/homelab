@@ -14,4 +14,5 @@ if [ -S /var/run/docker.sock ]; then
     addgroup root "$(getent group "$DOCKER_GID" | cut -d: -f1)"
 fi
 
+umask 002
 exec opencode "$@"
