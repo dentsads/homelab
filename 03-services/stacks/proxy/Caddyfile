@@ -47,6 +47,11 @@ adguard.homelab.548796327.xyz {
     reverse_proxy 127.0.0.1:3005
 }
 
+# --- Karakeep ---
+karakeep.homelab.548796327.xyz {
+    reverse_proxy 127.0.0.1:8083
+}
+
 # --- Reserved ports 30000-32000 for qa stage ---
 *.qa.homelab.548796327.xyz {
     @portRange header_regexp Host ^(3[0-1][0-9]{3}|32000)\.qa\.homelab\.548796327\.xyz$
