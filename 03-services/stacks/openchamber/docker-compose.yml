@@ -16,7 +16,7 @@ services:
       # Server credentials for the OpenCode API
       - OPENCODE_SERVER_PASSWORD=${OPENCODE_SERVER_PASSWORD}
       # Web UI password
-      - UI_PASSWORD=${OPENCHAMBER_UI_PASSWORD}
+      - OPENCHAMBER_UI_PASSWORD=${OPENCHAMBER_UI_PASSWORD}
       # Bind only to localhost (Caddy handles TLS/ingress)
       - OPENCHAMBER_HOST=127.0.0.1
       # GitHub SSH key for git operations

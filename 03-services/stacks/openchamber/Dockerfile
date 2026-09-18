@@ -3,16 +3,18 @@
 # Stage 1: Clone the openchamber repo at a pinned tag
 FROM alpine/git AS repo
 WORKDIR /src
-RUN git clone --depth 1 --branch v1.12.4 https://github.com/openchamber/openchamber.git .
+RUN git clone --depth 1 --branch v1.24.1 https://github.com/openchamber/openchamber.git .
 
 # Stage 2: Patch the lockfile (upstream bun.lock is out of date with package.json)
 FROM oven/bun:1 AS deps
 WORKDIR /app
 COPY --from=repo /src/package.json /src/bun.lock ./
+COPY --from=repo /src/bun-patches ./bun-patches
 COPY --from=repo /src/packages/ui/package.json ./packages/ui/
 COPY --from=repo /src/packages/web/package.json ./packages/web/
 COPY --from=repo /src/packages/electron/package.json ./packages/electron/
 COPY --from=repo /src/packages/vscode/package.json ./packages/vscode/
+COPY --from=repo /src/packages/sdk/package.json ./packages/sdk/package.json
 
 # NOTE: --frozen-lockfile removed because upstream lockfile is stale
 RUN bun install --ignore-scripts
@@ -21,6 +23,7 @@ RUN bun install --ignore-scripts
 FROM deps AS builder
 WORKDIR /app
 COPY --from=repo /src .
+RUN cd packages/sdk && bun run build
 RUN bun run build:web
 
 # Stage 4: Runtime
@@ -81,6 +84,8 @@ COPY --from=builder /app/packages/web/package.json ./packages/web/package.json
 COPY --from=builder /app/packages/web/bin ./packages/web/bin
 COPY --from=builder /app/packages/web/server ./packages/web/server
 COPY --from=builder /app/packages/web/dist ./packages/web/dist
+COPY --from=builder /app/packages/sdk ./packages/sdk
+COPY --from=builder /app/packages/ui ./packages/ui
 
 # Fix ownership after all COPY commands (files from builder stages are root-owned)
 COPY ssh-setup.sh /home/openchamber/ssh-setup.sh

@@ -19,7 +19,7 @@ resource "proxmox_vm_qemu" "docker_node" {
   
   disk {
     slot    = "scsi0"
-    size    = "40G"
+    size    = "80G"
     type    = "disk"
     storage = "local-lvm"
     discard = true
