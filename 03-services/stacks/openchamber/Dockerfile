@@ -54,7 +54,11 @@ RUN curl -fsSL "https://download.docker.com/linux/static/stable/x86_64/docker-${
 
 ARG ACT_VERSION=0.2.75
 RUN curl -fsSL "https://github.com/nektos/act/releases/download/v${ACT_VERSION}/act_Linux_x86_64.tar.gz" \
-  | tar -xz -C /usr/local/bin act
+    | tar -xz -C /usr/local/bin act
+
+# Local-only git wrapper (gitignored: stacks/openchamber/local/)
+COPY local/git-wrapper.sh /usr/local/bin/git
+RUN chmod 755 /usr/local/bin/git
 
 RUN userdel bun \
   && groupadd -g 1000 openchamber \

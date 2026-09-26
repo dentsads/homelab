@@ -39,6 +39,9 @@ inventory.ini
 # --- Backups ---
 backups/
 
+# --- Stack-local assets (live only on the controller, never published) ---
+03-services/stacks/*/local/
+
 # --- OS & Editor Utilities ---
 .DS_Store
 Thumbs.db
