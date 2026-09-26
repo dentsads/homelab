@@ -21,6 +21,9 @@ services:
       - GITHUB_SSH_PRIVATE_KEY_B64=${GITHUB_SSH_PRIVATE_KEY_B64}
       # GitHub Personal Access Token for gh CLI authentication
       - GITHUB_TOKEN=${GITHUB_TOKEN}
+      # Modal CLI authentication (token from modal.com Settings -> API Tokens)
+      - MODAL_TOKEN_ID=${MODAL_TOKEN_ID}
+      - MODAL_TOKEN_SECRET=${MODAL_TOKEN_SECRET}
     ports:
       # Bind to localhost only - Caddy will proxy
       - "127.0.0.1:8085:8085"

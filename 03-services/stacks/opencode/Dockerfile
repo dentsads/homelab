@@ -15,6 +15,10 @@ ARG ACT_VERSION=0.2.75
 RUN curl -fsSL "https://github.com/nektos/act/releases/download/v${ACT_VERSION}/act_Linux_x86_64.tar.gz" \
     | tar -xz -C /usr/local/bin act
 
+RUN curl -LsSf https://uvx.sh/modal/install.sh | sh
+
+ENV PATH="/root/.local/bin:${PATH}"
+
 COPY ssh-setup.sh /ssh-setup.sh
 RUN chmod +x /ssh-setup.sh
 
