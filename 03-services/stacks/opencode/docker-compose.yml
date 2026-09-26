@@ -14,6 +14,8 @@ services:
       - OPENCODE_ZEN_API_KEY=${OPENCODE_ZEN_API_KEY}
       # NeuralWatt API Key for LLM access
       - NEURALWATT_API_KEY=${NEURALWATT_API_KEY}
+      # NVIDIA NIM API Key for LLM access (build.nvidia.com)
+      - NVIDIA_API_KEY=${NVIDIA_API_KEY}
       # Server authentication
       - OPENCODE_SERVER_PASSWORD=${OPENCODE_SERVER_PASSWORD}
       - OPENCODE_SERVER_USERNAME=${OPENCODE_SERVER_USERNAME}

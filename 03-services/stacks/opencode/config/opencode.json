@@ -18,9 +18,29 @@
         "baseURL": "https://api.neuralwatt.com/v1",
         "apiKey": "{env:NEURALWATT_API_KEY}"
       }
+    },
+    "nvidia": {
+      "name": "NVIDIA NIM",
+      "npm": "@ai-sdk/openai-compatible",
+      "options": {
+        "baseURL": "https://integrate.api.nvidia.com/v1",
+        "apiKey": "{env:NVIDIA_API_KEY}"
+      },
+      "models": {
+        "deepseek-ai/deepseek-v4.1-flash": { "name": "DeepSeek V4.1 Flash" },
+        "moonshotai/kimi-k3": { "name": "Kimi K3" },
+        "z-ai/glm-5.3": { "name": "GLM 5.3" },
+        "z-ai/glm-5.3-flash": { "name": "GLM 5.3 Flash" },
+        "nvidia/nemotron-3-ultra-550b-a55b": { "name": "Nemotron 3 Ultra" },
+        "nvidia/nemotron-3-super-120b-a12b": { "name": "Nemotron 3 Super" },
+        "nvidia/nemotron-3.5-lightning-30b-a3b": { "name": "Nemotron 3.5 Lightning" },
+        "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning": { "name": "Nemotron 3 Nano Omni" },
+        "openai/gpt-oss-20b": { "name": "GPT OSS 20B" },
+        "meta/llama-3.2-90b-vision-instruct": { "name": "Llama 3.2 90B Vision" }
+      }
     }
   },
-  "enabled_providers": ["openrouter", "opencode", "neuralwatt"],
+  "enabled_providers": ["openrouter", "opencode", "neuralwatt", "nvidia"],
   "server": {
     "port": 8085,
     "hostname": "0.0.0.0"
