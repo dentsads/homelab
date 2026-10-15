@@ -1,0 +1,32 @@
+services:
+  comfyui:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: comfyui
+    restart: unless-stopped
+    environment:
+      # Modal credentials consumed by the comfyui-modal custom node (from Vaultwarden).
+      - MODAL_TOKEN_ID=${MODAL_TOKEN_ID}
+      - MODAL_TOKEN_SECRET=${MODAL_TOKEN_SECRET}
+      - MODAL_ENVIRONMENT=${MODAL_ENVIRONMENT:-main}
+      # Optional: Hugging Face token for downloading gated models to the Modal Volume.
+      - HF_TOKEN=${HF_TOKEN:-}
+    ports:
+      # Bind to localhost only - Caddy will proxy.
+      - "127.0.0.1:8188:8188"
+    volumes:
+      # Local model placeholders; real weights live in the Modal Volume.
+      - comfyui_models:/app/ComfyUI/models
+      # Images/videos streamed back from Modal.
+      - comfyui_output:/app/ComfyUI/output
+      # Uploaded input images.
+      - comfyui_input:/app/ComfyUI/input
+      # Custom nodes + comfyui-modal deploy state (seeded from the image on first run).
+      - comfyui_custom_nodes:/app/ComfyUI/custom_nodes
+
+volumes:
+  comfyui_models:
+  comfyui_output:
+  comfyui_input:
+  comfyui_custom_nodes:

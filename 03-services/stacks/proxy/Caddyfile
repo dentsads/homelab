@@ -52,6 +52,12 @@ karakeep.homelab.548796327.xyz {
     reverse_proxy 127.0.0.1:8083
 }
 
+# --- ComfyUI (CPU UI; generations offloaded to Modal GPUs) ---
+# NOTE: no authentication - anyone who can reach this URL can spend Modal credits.
+comfyui.homelab.548796327.xyz {
+    reverse_proxy 127.0.0.1:8188
+}
+
 # --- Reserved ports 30000-32000 for qa stage ---
 *.qa.homelab.548796327.xyz {
     @portRange header_regexp Host ^(3[0-1][0-9]{3}|32000)\.qa\.homelab\.548796327\.xyz$
