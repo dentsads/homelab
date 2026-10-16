@@ -24,9 +24,12 @@ services:
       - comfyui_input:/app/ComfyUI/input
       # Custom nodes + comfyui-modal deploy state (seeded from the image on first run).
       - comfyui_custom_nodes:/app/ComfyUI/custom_nodes
+      # Saved workflows, UI settings, and ComfyUI-Manager user config.
+      - comfyui_user:/app/ComfyUI/user
 
 volumes:
   comfyui_models:
   comfyui_output:
   comfyui_input:
   comfyui_custom_nodes:
+  comfyui_user:
