@@ -53,8 +53,32 @@
         msg: "No backup files found in {{ local_backup_dir }}/{{ stack_name }}"
       when: backup_files.matched == 0
 
+    - name: Reduce to latest backup per volume
+      # Sorted ascending by mtime, so each later file overwrites the earlier
+      # one for the same volume -> we keep the newest file per volume.
+      set_fact:
+        latest_backups: "{{ latest_backups | default({}) | combine({ item_vol: item }) }}"
+      vars:
+        item_vol: "{{ item.path | basename | regex_replace('(_\\d{4}-\\d{2}-\\d{2}_\\d{6})?\\.tar\\.gz$', '') }}"
+      loop: "{{ backup_files.files | sort(attribute='mtime') }}"
+      loop_control:
+        loop_var: item
+
     - name: Restore each volume
       include_tasks: tasks/restore_volume_task.yml
-      loop: "{{ backup_files.files }}"
+      loop: "{{ latest_backups.values() | list }}"
       loop_control:
         loop_var: backup_item
+
+    - name: Remove decrypted plaintext backups
+      # Only removes the plaintext copies produced from an encrypted .gpg
+      # source; never touches an unencrypted backup that is the only copy.
+      delegate_to: localhost
+      become: no
+      file:
+        path: "{{ item.path | replace('.tar.gz.gpg', '.tar.gz') }}"
+        state: absent
+      loop: "{{ encrypted_backups.files }}"
+      loop_control:
+        loop_var: item
+      when: backup_encryption_passphrase is defined and backup_encryption_passphrase | length > 0

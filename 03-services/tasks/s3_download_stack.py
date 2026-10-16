@@ -38,9 +38,10 @@ for item in data:
         continue
     vol = m.group(1)
     if vol not in volumes or item["LastModified"] > volumes[vol]["LastModified"]:
-        volumes[vol] = key
+        volumes[vol] = item
 
-for vol, key in volumes.items():
+for vol, item in volumes.items():
+    key = item["Key"]
     local = os.path.join(DEST, f"{vol}.tar.gz.gpg")
     try:
         subprocess.run(

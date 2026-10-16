@@ -1,8 +1,9 @@
 ---
 - name: Extract Volume Name from Filename
   set_fact:
-    # filename is like "core_portainer_data.tar.gz" -> "core_portainer_data"
-    volume_name: "{{ backup_item.path | basename | replace('.tar.gz', '') }}"
+    # "core_portainer_data.tar.gz" or "core_portainer_data_2026-10-16_210022.tar.gz"
+    # both map to "core_portainer_data"
+    volume_name: "{{ backup_item.path | basename | regex_replace('(_\\d{4}-\\d{2}-\\d{2}_\\d{6})?\\.tar\\.gz$', '') }}"
 
 - name: Create Docker Volume if missing
   shell: docker volume create {{ volume_name }}
