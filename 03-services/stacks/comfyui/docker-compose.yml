@@ -7,8 +7,12 @@ services:
     restart: unless-stopped
     environment:
       # Modal credentials consumed by the comfyui-modal custom node (from Vaultwarden).
+      # Token 2 is the active credential; token 1 is available for secondary use.
       - MODAL_TOKEN_ID=${MODAL_TOKEN_ID2}
       - MODAL_TOKEN_SECRET=${MODAL_TOKEN_SECRET2}
+      # Secondary Modal token pair for explicit use by tooling
+      - MODAL_TOKEN_ID2=${MODAL_TOKEN_ID}
+      - MODAL_TOKEN_SECRET2=${MODAL_TOKEN_SECRET}
       - MODAL_ENVIRONMENT=${MODAL_ENVIRONMENT:-main}
       # Optional: Hugging Face token for downloading gated models to the Modal Volume.
       - HF_TOKEN=${HF_TOKEN:-}

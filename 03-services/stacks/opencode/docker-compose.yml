@@ -26,6 +26,9 @@ services:
       # Modal CLI authentication (token from modal.com Settings -> API Tokens)
       - MODAL_TOKEN_ID=${MODAL_TOKEN_ID}
       - MODAL_TOKEN_SECRET=${MODAL_TOKEN_SECRET}
+      # Secondary Modal token pair for explicit use by tooling
+      - MODAL_TOKEN_ID2=${MODAL_TOKEN_ID2}
+      - MODAL_TOKEN_SECRET2=${MODAL_TOKEN_SECRET2}
     ports:
       # Bind to localhost only - Caddy will proxy
       - "127.0.0.1:8085:8085"
