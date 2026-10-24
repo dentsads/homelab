@@ -32,4 +32,4 @@ if [ -n "$HF_TOKEN" ] && [ -d "$CUSTOM_NODES_DIR/comfyui-modal" ]; then
 fi
 
 cd "$COMFYUI_DIR"
-exec python main.py --listen 0.0.0.0 --port 8188 --cpu --disable-auto-launch
+exec python main.py --listen 0.0.0.0 --port 8188 --cpu --disable-auto-launch --enable-assets
