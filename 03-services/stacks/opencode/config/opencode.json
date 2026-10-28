@@ -40,7 +40,7 @@
       }
     }
   },
-  "enabled_providers": ["openrouter", "opencode", "neuralwatt", "nvidia"],
+  "enabled_providers": ["openrouter", "opencode", "neuralwatt", "nvidia", "deepseek"],
   "server": {
     "port": 8085,
     "hostname": "0.0.0.0"
