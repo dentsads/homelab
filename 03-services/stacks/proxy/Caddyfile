@@ -52,6 +52,16 @@ karakeep.homelab.548796327.xyz {
     reverse_proxy 127.0.0.1:8083
 }
 
+# --- Finance: Actual Budget ---
+finance.homelab.548796327.xyz {
+    reverse_proxy 127.0.0.1:8086
+}
+
+# --- Finance: Grafana ---
+grafana-finance.homelab.548796327.xyz {
+    reverse_proxy 127.0.0.1:8087
+}
+
 # --- ComfyUI (CPU UI; generations offloaded to Modal GPUs) ---
 # NOTE: no authentication - anyone who can reach this URL can spend Modal credits.
 comfyui.homelab.548796327.xyz {

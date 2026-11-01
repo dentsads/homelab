@@ -1,0 +1,1143 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 1,
+  "links": [],
+  "panels": [
+    {
+      "datasource": {
+        "default": true,
+        "type": "frser-sqlite-datasource",
+        "uid": "P0CD8666848BF286D"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "green",
+            "mode": "thresholds"
+          },
+          "decimals": 2,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "€"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 4,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.2.2+security-01",
+      "targets": [
+        {
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "P0CD8666848BF286D"
+          },
+          "queryText": "SELECT SUM(amount/100.0) from v_transactions where substr(date, 1, 4)<=\"$year\";",
+          "queryType": "table",
+          "rawQueryText": "SELECT SUM(amount/100.0) from v_transactions where substr(date, 1, 4)<=\"$year\";",
+          "refId": "A",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "Net worth $year",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "default": true,
+        "type": "frser-sqlite-datasource",
+        "uid": "P0CD8666848BF286D"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-RdYlGr"
+          },
+          "mappings": [],
+          "max": 100,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 100
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "id": 5,
+      "options": {
+        "displayMode": "lcd",
+        "maxVizHeight": 300,
+        "minVizHeight": 16,
+        "minVizWidth": 8,
+        "namePlacement": "auto",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true,
+        "sizing": "auto",
+        "valueMode": "color"
+      },
+      "pluginVersion": "11.2.2+security-01",
+      "targets": [
+        {
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "P0CD8666848BF286D"
+          },
+          "queryText": "select MIN(SUM(amount/100.0)/50000*100,100) as \"€50k\", MIN(SUM(amount/100.0)/100000*100,100) as \"€100k\", MIN(SUM(amount/100.0)/250000*100,100) as \"€250k\", MIN(SUM(amount/100.0)/500000*100,100) as \"€500k\" from v_transactions where substr(date, 1, 4)<=\"$year\";",
+          "queryType": "table",
+          "rawQueryText": "select MIN(SUM(amount/100.0)/50000*100,100) as \"€50k\", MIN(SUM(amount/100.0)/100000*100,100) as \"€100k\", MIN(SUM(amount/100.0)/250000*100,100) as \"€250k\", MIN(SUM(amount/100.0)/500000*100,100) as \"€500k\" from v_transactions where substr(date, 1, 4)<=\"$year\";",
+          "refId": "ABC",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "Scorecard Net Worth $year",
+      "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "default": true,
+        "type": "frser-sqlite-datasource",
+        "uid": "P0CD8666848BF286D"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 1,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "decimals": 2,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "currencyEUR"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Total"
+            },
+            "properties": [
+              {
+                "id": "custom.hideFrom",
+                "value": {
+                  "legend": true,
+                  "tooltip": false,
+                  "viz": true
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      },
+      "id": 2,
+      "options": {
+        "barRadius": 0,
+        "barWidth": 0.97,
+        "fullHighlight": false,
+        "groupWidth": 0.7,
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "orientation": "auto",
+        "showValue": "never",
+        "stacking": "normal",
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        },
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 0
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "P0CD8666848BF286D"
+          },
+          "queryText": "SELECT \n    substr('JanFebMarAprMayJunJulAugSepOctNovDec', 1 + 3*substr(date, 5, 2), -3) || ' ' || substr(date, 3, 2) as Datum,\n    (SELECT -SUM(amount/100.0) from v_transactions t2 where substr(t2.date, 1, 6)=substr(t1.date, 1, 6) and category='5314f2dc-6129-4d47-a973-244a178fcffd') as Lebensmittelkauf,\n    (SELECT -SUM(amount/100.0) from v_transactions t2 where substr(t2.date, 1, 6)=substr(t1.date, 1, 6) and category='c8114bc7-9944-4b96-838d-d9e46796e7c0') as Bestellen\nFROM v_transactions t1\nWHERE substr(date, 1, 4)=\"$year\"\nGROUP BY Datum\nORDER BY date;",
+          "queryType": "table",
+          "rawQueryText": "SELECT \n    substr('JanFebMarAprMayJunJulAugSepOctNovDec', 1 + 3*substr(date, 5, 2), -3) || ' ' || substr(date, 3, 2) as Datum,\n    (SELECT -SUM(amount/100.0) from v_transactions t2 where substr(t2.date, 1, 6)=substr(t1.date, 1, 6) and category='5314f2dc-6129-4d47-a973-244a178fcffd') as Lebensmittelkauf,\n    (SELECT -SUM(amount/100.0) from v_transactions t2 where substr(t2.date, 1, 6)=substr(t1.date, 1, 6) and category='c8114bc7-9944-4b96-838d-d9e46796e7c0') as Bestellen\nFROM v_transactions t1\nWHERE substr(date, 1, 4)=\"$year\"\nGROUP BY Datum\nORDER BY date;",
+          "refId": "A",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "Essenskosten $year",
+      "transformations": [
+        {
+          "id": "calculateField",
+          "options": {
+            "mode": "reduceRow",
+            "reduce": {
+              "include": [
+                "Lebensmittelkauf",
+                "Bestellen"
+              ],
+              "reducer": "sum"
+            },
+            "replaceFields": false
+          }
+        }
+      ],
+      "type": "barchart"
+    },
+    {
+      "datasource": {
+        "default": true,
+        "type": "frser-sqlite-datasource",
+        "uid": "P0CD8666848BF286D"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 0,
+          "mappings": [],
+          "max": 10500,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "€"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Getilgt"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "green",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Offen"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "super-light-orange",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 8
+      },
+      "id": 3,
+      "options": {
+        "minVizHeight": 75,
+        "minVizWidth": 75,
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "sizing": "auto"
+      },
+      "pluginVersion": "11.2.2+security-01",
+      "targets": [
+        {
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "P0CD8666848BF286D"
+          },
+          "hide": false,
+          "queryText": "select 10500-SUM(amount/100.0) as Offen,SUM(amount/100.0) as Getilgt from v_transactions where account='8ce34628-6c31-4315-80bd-3fe4eef050d7' and category='f89fe60f-c0da-4015-b031-ccfd76255ccd' and substr(date, 1, 4)=\"$year\";",
+          "queryType": "table",
+          "rawQueryText": "select 10500-SUM(amount/100.0) as Offen,SUM(amount/100.0) as Getilgt from v_transactions where account='8ce34628-6c31-4315-80bd-3fe4eef050d7' and category='f89fe60f-c0da-4015-b031-ccfd76255ccd' and substr(date, 1, 4)=\"$year\";",
+          "refId": "A",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "Sondertilgung Ausreizung $year",
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "default": true,
+        "type": "frser-sqlite-datasource",
+        "uid": "P0CD8666848BF286D"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 1,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "decimals": 2,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "€"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 16
+      },
+      "id": 11,
+      "options": {
+        "barRadius": 0,
+        "barWidth": 0.97,
+        "fullHighlight": false,
+        "groupWidth": 0.7,
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "orientation": "vertical",
+        "showValue": "auto",
+        "stacking": "none",
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        },
+        "xTickLabelRotation": 20,
+        "xTickLabelSpacing": 0
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "P0CD8666848BF286D"
+          },
+          "queryText": "SELECT\n    v_categories.name as category,\n    -sum(v_transactions.amount/100.0)  as amount\nFROM \n    v_transactions\nJOIN \n    v_categories \nON \n    v_transactions.category = v_categories.id\nWHERE account='485a9e8d-1476-4d31-b9c0-193443dc9978' AND is_income=0 AND category != '182c3391-7cb6-46a6-b382-0c58952bd354' AND category != '5d31f7ee-0b38-47f5-bbe0-416d8d468a60' AND substr(date, 1, 4)=\"$year\"\ngroup by category\nORDER BY amount desc;",
+          "queryType": "table",
+          "rawQueryText": "SELECT\n    v_categories.name as category,\n    -sum(v_transactions.amount/100.0)  as amount\nFROM \n    v_transactions\nJOIN \n    v_categories \nON \n    v_transactions.category = v_categories.id\nWHERE account='485a9e8d-1476-4d31-b9c0-193443dc9978' AND is_income=0 AND category != '182c3391-7cb6-46a6-b382-0c58952bd354' AND category != '5d31f7ee-0b38-47f5-bbe0-416d8d468a60' AND substr(date, 1, 4)=\"$year\"\ngroup by category\nORDER BY amount desc;",
+          "refId": "A",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "Kosten nach Kategorie Girokonto $year",
+      "type": "barchart"
+    },
+    {
+      "datasource": {
+        "default": true,
+        "type": "frser-sqlite-datasource",
+        "uid": "P0CD8666848BF286D"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 1,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "decimals": 2,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "€"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 16
+      },
+      "id": 12,
+      "options": {
+        "barRadius": 0,
+        "barWidth": 0.97,
+        "fullHighlight": false,
+        "groupWidth": 0.7,
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "orientation": "vertical",
+        "showValue": "auto",
+        "stacking": "none",
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        },
+        "xTickLabelRotation": 20,
+        "xTickLabelSpacing": 0
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "P0CD8666848BF286D"
+          },
+          "queryText": "SELECT\n    v_categories.name as category,\n    -sum(v_transactions.amount/100.0)  as amount\nFROM \n    v_transactions\nJOIN \n    v_categories \nON \n    v_transactions.category = v_categories.id\nWHERE account='46746a7c-0eff-4702-a081-5cef893afce9' AND is_income=0 AND category != '182c3391-7cb6-46a6-b382-0c58952bd354' AND category != 'cf607948-1034-412a-8a21-72a9dc761c5f' AND amount < 0 AND substr(date, 1, 4)=\"$year\"\ngroup by category\nORDER BY amount desc;",
+          "queryType": "table",
+          "rawQueryText": "SELECT\n    v_categories.name as category,\n    -sum(v_transactions.amount/100.0)  as amount\nFROM \n    v_transactions\nJOIN \n    v_categories \nON \n    v_transactions.category = v_categories.id\nWHERE account='46746a7c-0eff-4702-a081-5cef893afce9' AND is_income=0 AND category != '182c3391-7cb6-46a6-b382-0c58952bd354' AND category != 'cf607948-1034-412a-8a21-72a9dc761c5f' AND amount < 0 AND substr(date, 1, 4)=\"$year\"\ngroup by category\nORDER BY amount desc;",
+          "refId": "A",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "Kosten nach Kategorie Gemeinschaftskonto $year",
+      "type": "barchart"
+    },
+    {
+      "datasource": {
+        "default": true,
+        "type": "frser-sqlite-datasource",
+        "uid": "P0CD8666848BF286D"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "decimals": 0,
+          "fieldMinMax": false,
+          "mappings": [],
+          "min": 0,
+          "unit": "Euro (€)"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 24
+      },
+      "id": 1,
+      "options": {
+        "displayLabels": [
+          "percent",
+          "name",
+          "value"
+        ],
+        "legend": {
+          "displayMode": "list",
+          "placement": "right",
+          "showLegend": true,
+          "values": []
+        },
+        "pieType": "pie",
+        "reduceOptions": {
+          "calcs": [],
+          "fields": "/.*/",
+          "values": false
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.2.2+security-01",
+      "targets": [
+        {
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "P0CD8666848BF286D"
+          },
+          "hide": true,
+          "queryText": "select amount/100.0 as Gehalt from v_transactions where category='3c1699a5-522a-435e-86dc-93d900a14f0e' ORDER BY date DESC LIMIT 1;",
+          "queryType": "table",
+          "rawQueryText": "select amount/100.0 as Gehalt from v_transactions where category='3c1699a5-522a-435e-86dc-93d900a14f0e' ORDER BY date DESC LIMIT 1;",
+          "refId": "A",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        },
+        {
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "P0CD8666848BF286D"
+          },
+          "hide": false,
+          "queryText": "select amount/100.0 as Sparen from v_transactions where category='182c3391-7cb6-46a6-b382-0c58952bd354' ORDER BY date DESC LIMIT 1;",
+          "queryType": "table",
+          "rawQueryText": "select amount/100.0 as Sparen from v_transactions where category='182c3391-7cb6-46a6-b382-0c58952bd354' ORDER BY date DESC LIMIT 1;",
+          "refId": "B",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        },
+        {
+          "datasource": {
+            "name": "Expression",
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "expression": "$A-$B",
+          "hide": false,
+          "refId": "Gehalt",
+          "type": "math"
+        }
+      ],
+      "title": "Sparquote aktueller Monat",
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "default": true,
+        "type": "frser-sqlite-datasource",
+        "uid": "P0CD8666848BF286D"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 1,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "decimals": 2,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "€"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Total"
+            },
+            "properties": [
+              {
+                "id": "custom.hideFrom",
+                "value": {
+                  "legend": true,
+                  "tooltip": false,
+                  "viz": true
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 24
+      },
+      "id": 6,
+      "options": {
+        "barRadius": 0,
+        "barWidth": 0.97,
+        "fullHighlight": false,
+        "groupWidth": 0.7,
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "right",
+          "showLegend": false
+        },
+        "orientation": "auto",
+        "showValue": "never",
+        "stacking": "normal",
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        },
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 0
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "P0CD8666848BF286D"
+          },
+          "queryText": "SELECT\n    substr('JanFebMarAprMayJunJulAugSepOctNovDec', 1 + 3*substr(date, 5, 2), -3) || ' ' || substr(date, 3, 2) as Datum,\n    -sum(v_transactions.amount/100.0)  as amount,\n    accounts.name account, \n    v_categories.name as category,\n    v_categories.is_income,\n    v_transactions.notes,\n    v_transactions.date\nFROM \n    v_transactions\nJOIN \n    v_categories \nON \n    v_transactions.category = v_categories.id\nJOIN \n    accounts\nON \n    v_transactions.account = accounts.id\nWHERE account='485a9e8d-1476-4d31-b9c0-193443dc9978' AND is_income=0 AND category != '182c3391-7cb6-46a6-b382-0c58952bd354' AND category != '5d31f7ee-0b38-47f5-bbe0-416d8d468a60' AND substr(date, 1, 4)=\"$year\"\ngroup by category, Datum\nORDER BY date;",
+          "queryType": "table",
+          "rawQueryText": "SELECT\n    substr('JanFebMarAprMayJunJulAugSepOctNovDec', 1 + 3*substr(date, 5, 2), -3) || ' ' || substr(date, 3, 2) as Datum,\n    -sum(v_transactions.amount/100.0)  as amount,\n    accounts.name account, \n    v_categories.name as category,\n    v_categories.is_income,\n    v_transactions.notes,\n    v_transactions.date\nFROM \n    v_transactions\nJOIN \n    v_categories \nON \n    v_transactions.category = v_categories.id\nJOIN \n    accounts\nON \n    v_transactions.account = accounts.id\nWHERE account='485a9e8d-1476-4d31-b9c0-193443dc9978' AND is_income=0 AND category != '182c3391-7cb6-46a6-b382-0c58952bd354' AND category != '5d31f7ee-0b38-47f5-bbe0-416d8d468a60' AND substr(date, 1, 4)=\"$year\"\ngroup by category, Datum\nORDER BY date;",
+          "refId": "A",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "Kosten nach Monat $year",
+      "transformations": [
+        {
+          "id": "groupingToMatrix",
+          "options": {
+            "columnField": "category",
+            "emptyValue": "null",
+            "rowField": "Datum",
+            "valueField": "amount"
+          }
+        },
+        {
+          "id": "calculateField",
+          "options": {
+            "mode": "reduceRow",
+            "reduce": {
+              "include": [
+                "Altersvorsorge",
+                "MSCI-World",
+                "Rechtsschutzversicherung",
+                "Berufsunfähigkeitsvers.",
+                "KfZ-Haftpflichtversicherung Opel",
+                "KfZ-Haftpflichtversicherung Tiguan",
+                "Hausratsversicherung",
+                "KfZ-Reparaturen",
+                "Mobilfunkvertrag",
+                "Gemeinschaftskonto",
+                "Lebensmitteleinkäufe",
+                "Netflix",
+                "Tilgung+Zinsen",
+                "Urlaub",
+                "Sondertilgung",
+                "Sonstiges",
+                "Grundsteuer",
+                "Tanken",
+                "Instandhaltung/Reparatur",
+                "Abwasser",
+                "Bestellen+Restaurants",
+                "Taxis ENFIA",
+                "KfZ-Steuer Tiguan",
+                "Drogerie",
+                "Kreditkarte",
+                "Geschäftsreisen",
+                "Reisekrankenversicherung",
+                "Wohngebäudeversicherung"
+              ],
+              "reducer": "sum"
+            },
+            "replaceFields": false
+          }
+        }
+      ],
+      "type": "barchart"
+    },
+    {
+      "datasource": {
+        "default": true,
+        "type": "frser-sqlite-datasource",
+        "uid": "P0CD8666848BF286D"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "fieldMinMax": false,
+          "mappings": [],
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 20
+              },
+              {
+                "color": "green",
+                "value": 30
+              }
+            ]
+          },
+          "unit": "%"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 32
+      },
+      "id": 7,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "mean"
+          ],
+          "fields": "/^percentage$/",
+          "values": false
+        },
+        "showPercentChange": true,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.2.2+security-01",
+      "targets": [
+        {
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "P0CD8666848BF286D"
+          },
+          "queryText": "SELECT\n    substr('JanFebMarAprMayJunJulAugSepOctNovDec', 1 + 3*substr(date, 5, 2), -3) || ' ' || substr(date, 3, 2) as Datum,\n    CASE \n        WHEN (SELECT amount/100.0 from v_transactions t2 where substr(t2.date, 1, 6)=substr(t1.date, 1, 6) and category='182c3391-7cb6-46a6-b382-0c58952bd354') IS NULL OR (SELECT amount/100.0 from v_transactions t2 where substr(t2.date, 1, 6)=substr(t1.date, 1, 6) and category='3c1699a5-522a-435e-86dc-93d900a14f0e') IS NULL THEN 0\n        ELSE ROUND(((SELECT amount/100.0 from v_transactions t2 where substr(t2.date, 1, 6)=substr(t1.date, 1, 6) and category='182c3391-7cb6-46a6-b382-0c58952bd354') * 1.0) / (SELECT amount/100.0 from v_transactions t2 where substr(t2.date, 1, 6)=substr(t1.date, 1, 6) and category='3c1699a5-522a-435e-86dc-93d900a14f0e') * 100, 2)\n    END as percentage\nFROM v_transactions t1\nWHERE substr(date, 1, 4) || substr(date, 5, 2) || substr(date, 7, 2) > substr(date('now','-6 months'), 1, 4) || substr(date('now','-6 months'), 6, 2) || substr(date('now','-6 months'), 9, 2) AND substr(date, 5, 2) != substr(date(), 6, 2)\nGROUP BY Datum\nORDER BY date;",
+          "queryType": "table",
+          "rawQueryText": "SELECT\n    substr('JanFebMarAprMayJunJulAugSepOctNovDec', 1 + 3*substr(date, 5, 2), -3) || ' ' || substr(date, 3, 2) as Datum,\n    CASE \n        WHEN (SELECT amount/100.0 from v_transactions t2 where substr(t2.date, 1, 6)=substr(t1.date, 1, 6) and category='182c3391-7cb6-46a6-b382-0c58952bd354') IS NULL OR (SELECT amount/100.0 from v_transactions t2 where substr(t2.date, 1, 6)=substr(t1.date, 1, 6) and category='3c1699a5-522a-435e-86dc-93d900a14f0e') IS NULL THEN 0\n        ELSE ROUND(((SELECT amount/100.0 from v_transactions t2 where substr(t2.date, 1, 6)=substr(t1.date, 1, 6) and category='182c3391-7cb6-46a6-b382-0c58952bd354') * 1.0) / (SELECT amount/100.0 from v_transactions t2 where substr(t2.date, 1, 6)=substr(t1.date, 1, 6) and category='3c1699a5-522a-435e-86dc-93d900a14f0e') * 100, 2)\n    END as percentage\nFROM v_transactions t1\nWHERE substr(date, 1, 4) || substr(date, 5, 2) || substr(date, 7, 2) > substr(date('now','-6 months'), 1, 4) || substr(date('now','-6 months'), 6, 2) || substr(date('now','-6 months'), 9, 2) AND substr(date, 5, 2) != substr(date(), 6, 2)\nGROUP BY Datum\nORDER BY date;",
+          "refId": "A",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "Durchschnittliche Quote Sparen/Gehalt Trend 6 Monate",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "default": true,
+        "type": "frser-sqlite-datasource",
+        "uid": "P0CD8666848BF286D"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 0,
+          "fieldMinMax": false,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "yellow",
+                "value": null
+              }
+            ]
+          },
+          "unit": "€"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 32
+      },
+      "id": 10,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "mean"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": true,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.2.2+security-01",
+      "targets": [
+        {
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "P0CD8666848BF286D"
+          },
+          "queryText": "SELECT\n    substr('JanFebMarAprMayJunJulAugSepOctNovDec', 1 + 3*substr(date, 5, 2), -3) || ' ' || substr(date, 3, 2) as Datum,\n    -sum(amount/100.0) as amount\nFROM \n    v_transactions\nJOIN \n    v_categories \nON \n    v_transactions.category = v_categories.id\nWHERE account='485a9e8d-1476-4d31-b9c0-193443dc9978' AND is_income=0 AND category != '182c3391-7cb6-46a6-b382-0c58952bd354' AND category != '5d31f7ee-0b38-47f5-bbe0-416d8d468a60' AND substr(date, 1, 4) || substr(date, 5, 2) || substr(date, 7, 2) > substr(date('now','-12 months'), 1, 4) || substr(date('now','-12 months'), 6, 2) || substr(date('now','-12 months'), 9, 2) AND substr(date, 5, 2) != substr(date(), 6, 2)\ngroup by Datum\nORDER BY date;",
+          "queryType": "table",
+          "rawQueryText": "SELECT\n    substr('JanFebMarAprMayJunJulAugSepOctNovDec', 1 + 3*substr(date, 5, 2), -3) || ' ' || substr(date, 3, 2) as Datum,\n    -sum(amount/100.0) as amount\nFROM \n    v_transactions\nJOIN \n    v_categories \nON \n    v_transactions.category = v_categories.id\nWHERE account='485a9e8d-1476-4d31-b9c0-193443dc9978' AND is_income=0 AND category != '182c3391-7cb6-46a6-b382-0c58952bd354' AND category != '5d31f7ee-0b38-47f5-bbe0-416d8d468a60' AND substr(date, 1, 4) || substr(date, 5, 2) || substr(date, 7, 2) > substr(date('now','-12 months'), 1, 4) || substr(date('now','-12 months'), 6, 2) || substr(date('now','-12 months'), 9, 2) AND substr(date, 5, 2) != substr(date(), 6, 2)\ngroup by Datum\nORDER BY date;",
+          "refId": "A",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "Durchschnittliche Kosten 12 Monate",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "default": true,
+        "type": "frser-sqlite-datasource",
+        "uid": "P0CD8666848BF286D"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "decimals": 2,
+          "mappings": [],
+          "unit": "€"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 40
+      },
+      "id": 9,
+      "options": {
+        "displayLabels": [
+          "name",
+          "percent"
+        ],
+        "legend": {
+          "displayMode": "list",
+          "placement": "right",
+          "showLegend": true,
+          "values": []
+        },
+        "pieType": "donut",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "P0CD8666848BF286D"
+          },
+          "queryText": "SELECT \n  (SELECT SUM(amount/100.0) from v_transactions where account='33fba22d-2bca-4e2c-aacc-f11818b9fb8c' and substr(date, 1, 4)<=\"$year\") as ETFs,\n  (SELECT SUM(amount/100.0) from v_transactions where account='2b078462-c6fe-4fa3-9608-263f6bff40c2' and substr(date, 1, 4)<=\"$year\") as bAV,\n  (SELECT SUM(amount/100.0) from v_transactions where account in ('485a9e8d-1476-4d31-b9c0-193443dc9978','2fbd0039-a275-4836-85c3-583c41ec5b1b', 'd05e55b2-d75d-459a-b85f-a262e5d79a54', '6d86b807-ab3a-43d9-aeb6-82b34da41aeb', '52473ef9-5805-442a-9f71-0f676bcb5fd6') and substr(date, 1, 4)<=\"$year\") as 'Tagesgeld/Festgeld/Cash'    \nLIMIT 1;",
+          "queryType": "table",
+          "rawQueryText": "SELECT \n  (SELECT SUM(amount/100.0) from v_transactions where account='33fba22d-2bca-4e2c-aacc-f11818b9fb8c' and substr(date, 1, 4)<=\"$year\") as ETFs,\n  (SELECT SUM(amount/100.0) from v_transactions where account='2b078462-c6fe-4fa3-9608-263f6bff40c2' and substr(date, 1, 4)<=\"$year\") as bAV,\n  (SELECT SUM(amount/100.0) from v_transactions where account in ('485a9e8d-1476-4d31-b9c0-193443dc9978','2fbd0039-a275-4836-85c3-583c41ec5b1b', 'd05e55b2-d75d-459a-b85f-a262e5d79a54', '6d86b807-ab3a-43d9-aeb6-82b34da41aeb', '52473ef9-5805-442a-9f71-0f676bcb5fd6') and substr(date, 1, 4)<=\"$year\") as 'Tagesgeld/Festgeld/Cash'    \nLIMIT 1;",
+          "refId": "A",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "Asset Allocation $year",
+      "type": "piechart"
+    }
+  ],
+  "schemaVersion": 39,
+  "tags": [],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "selected": true,
+          "text": "2024",
+          "value": "2024"
+        },
+        "datasource": {
+          "type": "frser-sqlite-datasource",
+          "uid": "P0CD8666848BF286D"
+        },
+        "definition": "SELECT\n    substr(date, 1, 4) as Datum\nFROM v_transactions\nGROUP BY Datum;",
+        "hide": 0,
+        "includeAll": false,
+        "label": "Jahr",
+        "multi": false,
+        "name": "year",
+        "options": [],
+        "query": "SELECT\n    substr(date, 1, 4) as Datum\nFROM v_transactions\nGROUP BY Datum;",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 4,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Finanzen",
+  "uid": "ce1kgyz385rswb",
+  "version": 3,
+  "weekStart": ""
+}

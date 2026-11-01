@@ -1,0 +1,52 @@
+services:
+  actual_server:
+    image: actualbudget/actual-server:26.11.0
+    container_name: finance-actual
+    restart: unless-stopped
+    environment:
+      - ACTUAL_PORT=5006
+    volumes:
+      - data:/data
+    ports:
+      # Bind to localhost only - Caddy handles TLS and ingress.
+      - "127.0.0.1:8086:5006"
+
+  unzip-db:
+    image: alpine:3.24.3
+    container_name: finance-unzip-db
+    restart: unless-stopped
+    command:
+      - /bin/sh
+      - -c
+      - |
+        unzip -o /data/user-files/*.blob -d /data/db
+        sleep 30
+    volumes:
+      - data:/data
+    depends_on:
+      - actual_server
+
+  grafana:
+    image: grafana/grafana-enterprise:13.2.5
+    container_name: finance-grafana
+    restart: unless-stopped
+    environment:
+      - GF_INSTALL_PLUGINS=frser-sqlite-datasource
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_AUTH_ANONYMOUS_ENABLED=false
+      - GF_SERVER_ROOT_URL=https://grafana-finance.homelab.548796327.xyz
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana-config/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana-config/dashboards:/var/lib/grafana/dashboards:ro
+      - data:/data:ro
+    ports:
+      # Bind to localhost only - Caddy handles TLS and ingress.
+      - "127.0.0.1:8087:3000"
+    depends_on:
+      - unzip-db
+
+volumes:
+  data:
+  grafana_data:
