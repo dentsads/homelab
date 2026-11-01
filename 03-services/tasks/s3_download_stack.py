@@ -19,15 +19,26 @@ try:
          "--query", "Contents[?ends_with(Key, '.tar.gz.gpg')]",
          "--output", "json"],
         capture_output=True, text=True, check=True)
+except FileNotFoundError:
+    print("S3 list failed: aws CLI not found", file=sys.stderr)
+    sys.exit(1)
+except subprocess.CalledProcessError as e:
+    print(f"S3 list failed: {e.stderr or e}", file=sys.stderr)
+    sys.exit(1)
+
+try:
     data = json.loads(r.stdout)
-    if not isinstance(data, list):
-        sys.exit(0)
-except Exception as e:
-    print(f"S3 list failed: {e}", file=sys.stderr)
-    sys.exit(0)
+except json.JSONDecodeError as e:
+    print(f"Failed to parse S3 response: {e}", file=sys.stderr)
+    sys.exit(1)
 
 if not data:
-    sys.exit(0)
+    print(f"No S3 backups found under s3://{BUCKET}/{PREFIX}", file=sys.stderr)
+    sys.exit(1)
+
+if not isinstance(data, list):
+    print(f"Unexpected S3 response: {data!r}", file=sys.stderr)
+    sys.exit(1)
 
 volumes = {}
 for item in data:
@@ -40,12 +51,34 @@ for item in data:
     if vol not in volumes or item["LastModified"] > volumes[vol]["LastModified"]:
         volumes[vol] = item
 
+if not volumes:
+    print(f"No matching S3 backups found under s3://{BUCKET}/{PREFIX}", file=sys.stderr)
+    sys.exit(1)
+
+downloads = []
 for vol, item in volumes.items():
     key = item["Key"]
     local = os.path.join(DEST, f"{vol}.tar.gz.gpg")
+    downloads.append((key, f"{local}.part", local))
+
+for key, temp, _ in downloads:
     try:
         subprocess.run(
-            ["aws", "s3", "cp", f"s3://{BUCKET}/{key}", local],
-            check=True)
-    except Exception as e:
-        print(f"Failed to download {key}: {e}", file=sys.stderr)
+            ["aws", "s3", "cp", f"s3://{BUCKET}/{key}", temp],
+            capture_output=True, text=True, check=True)
+    except FileNotFoundError:
+        print(f"Failed to download {key}: aws CLI not found", file=sys.stderr)
+        for _, temp_path, _ in downloads:
+            if os.path.exists(temp_path):
+                os.remove(temp_path)
+        sys.exit(1)
+    except subprocess.CalledProcessError as e:
+        print(f"Failed to download {key}: {e.stderr or e}", file=sys.stderr)
+        for _, temp_path, _ in downloads:
+            if os.path.exists(temp_path):
+                os.remove(temp_path)
+        sys.exit(1)
+
+for key, temp, local in downloads:
+    os.replace(temp, local)
+    print(f"Downloaded s3://{BUCKET}/{key} -> {local}")

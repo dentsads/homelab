@@ -53,7 +53,7 @@
 
     - name: Fail if no backups found
       fail:
-        msg: "No backup files found in {{ local_backup_dir }}/{{ stack_name }}"
+        msg: "No backup files found in {{ local_backup_dir }}/{{ stack_name }}. If S3 is configured, check the S3 download error above."
       when: backup_files.matched == 0
 
     - name: Reduce to latest backup per volume

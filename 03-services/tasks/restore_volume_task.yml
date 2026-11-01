@@ -6,7 +6,11 @@
     volume_name: "{{ backup_item.path | basename | regex_replace('(_\\d{4}-\\d{2}-\\d{2}_\\d{6})?\\.tar\\.gz$', '') }}"
 
 - name: Create Docker Volume if missing
-  shell: docker volume create {{ volume_name }}
+  shell: >
+    docker volume create
+    --label "com.docker.compose.project={{ stack_name }}"
+    --label "com.docker.compose.volume={{ volume_name | regex_replace('^' ~ stack_name ~ '_', '') }}"
+    {{ volume_name }}
 
 - name: Unarchive data into volume
   # We use unarchive module which handles upload + extract in one go
