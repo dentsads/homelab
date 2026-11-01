@@ -88,6 +88,7 @@ Parse with `jq -r .host.ip config.json`, etc.
 - If `.env` has `BACKUP_ENCRYPTION_PASSPHRASE` set, each volume is **AES256 GPG-encrypted** locally before storage. The plain `.tar.gz` is removed; only `.tar.gz.gpg` remains on disk.
 - If `.env` has `S3_BUCKET` and credentials set, encrypted backups are also **synced to S3** with dated keys (`<stack>/<volume>_<timestamp>.tar.gz.gpg`). Old backups accumulate — prune via S3 lifecycle or manual cleanup.
 - Restore priority: S3 (latest) → local `.tar.gz.gpg` → local `.tar.gz` (backward compatible).
+- Optional per-stack backup settings live in `03-services/stacks/<name>/backup.yml` (`volume_backup_excludes`, `volume_restore_owners`).
 
 ## Services layer commands
 

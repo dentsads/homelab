@@ -11,6 +11,9 @@
         msg: "You must provide a 'stack_name' variable."
       when: stack_name is undefined
 
+    - name: Load stack backup configuration
+      include_tasks: tasks/load_stack_backup_config.yml
+
     # --- Phase 1: Download from S3 (if configured) ---
     - block:
         - name: Download latest backups from S3

@@ -13,5 +13,5 @@
   unarchive:
     src: "{{ backup_item.path }}"
     dest: "/var/lib/docker/volumes/{{ volume_name }}/_data"
-    owner: root
-    group: root
+    owner: "{{ (volume_restore_owners | default({})).get(volume_name, {}).get('owner', 'root') }}"
+    group: "{{ (volume_restore_owners | default({})).get(volume_name, {}).get('group', 'root') }}"

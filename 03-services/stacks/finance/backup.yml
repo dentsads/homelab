@@ -1,0 +1,9 @@
+---
+volume_backup_excludes:
+  finance_grafana_data:
+    - ./plugins
+
+volume_restore_owners:
+  finance_grafana_data:
+    owner: "472"
+    group: "root"

@@ -1,0 +1,12 @@
+---
+- name: Check for stack backup configuration
+  delegate_to: localhost
+  become: no
+  stat:
+    path: "{{ playbook_dir }}/stacks/{{ stack_name }}/backup.yml"
+  register: stack_backup_config
+
+- name: Load stack backup configuration
+  include_vars:
+    file: "{{ playbook_dir }}/stacks/{{ stack_name }}/backup.yml"
+  when: stack_backup_config.stat.exists

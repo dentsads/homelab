@@ -13,6 +13,9 @@
         msg: "You must provide a 'stack_name' variable."
       when: stack_name is undefined
 
+    - name: Load stack backup configuration
+      include_tasks: tasks/load_stack_backup_config.yml
+
     - name: Ensure local backup directory exists
       delegate_to: localhost
       become: no
@@ -46,6 +49,8 @@
       loop: "{{ stack_volumes.stdout_lines }}"
       loop_control:
         loop_var: volume_name
+      vars:
+        exclude_patterns: "{{ (volume_backup_excludes | default({})).get(volume_name, []) }}"
 
     - name: Restart containers
       shell: docker compose start

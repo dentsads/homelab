@@ -3,7 +3,8 @@
   shell: |
     # standard path for docker named volumes
     cd /var/lib/docker/volumes/{{ volume_name }}/_data && \
-    tar -czf {{ remote_tmp_dir }}/{{ volume_name }}.tar.gz .
+    tar -czf {{ remote_tmp_dir }}/{{ volume_name }}.tar.gz \
+      {% for pattern in exclude_patterns | default([]) %}--exclude={{ pattern | quote }} {% endfor %}.
 
 - name: "Download backup: {{ volume_name }}"
   fetch:
