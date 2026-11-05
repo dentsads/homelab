@@ -14,12 +14,18 @@ services:
         [ -e /config/scripts.yaml ]     || printf '{}\n' > /config/scripts.yaml
         [ -e /config/scenes.yaml ]      || printf '[]\n' > /config/scenes.yaml
         mkdir -p /config/themes
+        if [ ! -e /config/.storage/http ]; then
+          mkdir -p /config/.storage
+          cp /seed/http.json /config/.storage/http
+          chmod 600 /config/.storage/http
+        fi
     volumes:
       - hass_config:/config
+      - ./seed/http.json:/seed/http.json:ro
 
   homeassistant:
     container_name: homeassistant
-    image: "ghcr.io/home-assistant/home-assistant:stable"
+    image: "ghcr.io/home-assistant/home-assistant:2026.11.0"
     restart: unless-stopped
     network_mode: host
     privileged: true
