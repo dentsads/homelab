@@ -1,6 +1,22 @@
 version: '3.8'
 
 services:
+  init-config:
+    container_name: homeassistant-init
+    image: alpine:3.24.3
+    restart: "no"
+    command:
+      - /bin/sh
+      - -c
+      - |
+        set -e
+        [ -e /config/automations.yaml ] || printf '[]\n' > /config/automations.yaml
+        [ -e /config/scripts.yaml ]     || printf '{}\n' > /config/scripts.yaml
+        [ -e /config/scenes.yaml ]      || printf '[]\n' > /config/scenes.yaml
+        mkdir -p /config/themes
+    volumes:
+      - hass_config:/config
+
   homeassistant:
     container_name: homeassistant
     image: "ghcr.io/home-assistant/home-assistant:stable"
@@ -14,6 +30,9 @@ services:
       - /run/dbus:/run/dbus:ro
       - /etc/localtime:/etc/localtime:ro
       - ./configuration.yaml:/config/configuration.yaml:ro
+    depends_on:
+      init-config:
+        condition: service_completed_successfully
 
 volumes:
   hass_config:
